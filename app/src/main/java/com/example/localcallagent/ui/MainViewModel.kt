@@ -1,5 +1,6 @@
 package com.example.localcallagent.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localcallagent.agent.orchestrator.AgentState
@@ -8,20 +9,21 @@ import com.example.localcallagent.asr.local.StreamingAsr
 import com.example.localcallagent.benchmark.BenchmarkReport
 import com.example.localcallagent.benchmark.BenchmarkRunner
 import com.example.localcallagent.core.model.*
-import com.example.localcallagent.core.privacy.LocalEncryptedTranscriptStore
-import com.example.localcallagent.core.privacy.Redactor
 import com.example.localcallagent.llm.litert.DeterministicFallbackModel
 import com.example.localcallagent.telephony.api.CallTransport
 import com.example.localcallagent.telephony.api.RegistrationState
 import com.example.localcallagent.telephony.sip.SipAgentTransport
 import com.example.localcallagent.tts.local.LocalTts
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class QualificationState(
     val isScanned: Boolean = false,
@@ -136,13 +138,12 @@ class MainViewModel : ViewModel() {
      */
     fun registerSip() {
         registrationJob?.cancel()
-        registrationJob = viewModelScope.launch {
+        registrationJob = viewModelScope.launch(Dispatchers.IO) {
             _registrationState.value = RegistrationState.REGISTERING
             _sipStatusMessage.value = "Registering with ${_sipConfig.value.domain}…"
             try {
                 val transport = sipTransport ?: SipAgentTransport().also { sipTransport = it }
                 transport.register(_sipConfig.value)
-                // Observe engine registration updates
                 launch {
                     transport.registrationState.collect { state ->
                         _registrationState.value = state
@@ -162,7 +163,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun unregisterSip() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 sipTransport?.unregister()
             } catch (_: Exception) {
@@ -172,8 +173,14 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private fun isSipLive(): Boolean {
+        val transport = sipTransport ?: return false
+        return transport.registrationState.value == RegistrationState.REGISTERED ||
+            _registrationState.value == RegistrationState.REGISTERED
+    }
+
     fun startCall(onConnected: () -> Unit = {}) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val objective = CallObjective(
                 destination = phoneNumber.value,
                 businessName = businessName.value,
@@ -181,24 +188,15 @@ class MainViewModel : ViewModel() {
                 callerName = _sipConfig.value.displayName ?: "Alex"
             )
 
-            // Simulated active transport for testing / in-app demo
-            val callState = MutableStateFlow<AppCallState>(AppCallState.Ringing)
-            val audioFlow = MutableStateFlow(PcmFrame(ShortArray(320), 8000))
+            val useSip = isSipLive()
+            val liveTransport = sipTransport
 
-            val mockTransport = object : CallTransport {
-                override val state: StateFlow<AppCallState> = callState
-                override val supportsProgrammaticMedia: Boolean = true
-                override val remoteAudio = audioFlow
-                override suspend fun dial(destination: String) {
-                    delay(800)
-                    callState.value = AppCallState.Active
-                }
-                override suspend fun answer() {}
-                override suspend fun hangUp() {
-                    callState.value = AppCallState.Disconnected()
-                }
-                override suspend fun sendDtmf(digit: Char) {}
-                override suspend fun sendAudio(frame: PcmFrame) {}
+            val transport: CallTransport = if (useSip && liveTransport != null) {
+                Log.i(TAG, "Using SipAgentTransport for live call dest=${objective.destination}")
+                liveTransport
+            } else {
+                Log.i(TAG, "Using mock CallTransport (demo mode; SIP not registered)")
+                createMockTransport()
             }
 
             val mockAsr = object : StreamingAsr {
@@ -216,7 +214,7 @@ class MainViewModel : ViewModel() {
             }
 
             val controller = ConversationController(
-                transport = mockTransport,
+                transport = transport,
                 asr = mockAsr,
                 tts = mockTts,
                 model = DeterministicFallbackModel()
@@ -225,48 +223,122 @@ class MainViewModel : ViewModel() {
 
             _agentState.value = AgentState.DIALING
             _callDurationSeconds.value = 0L
-            _liveTranscript.value = emptyList<DialogueTurn>()
+            _liveTranscript.value = emptyList()
 
-            // Observe controller flows
-            launch {
-                controller.agentState.collect { _agentState.value = it }
-            }
-            launch {
-                controller.liveTranscript.collect { _liveTranscript.value = it }
-            }
-            launch {
-                controller.latestResult.collect { _latestResult.value = it }
-            }
+            launch { controller.agentState.collect { _agentState.value = it } }
+            launch { controller.liveTranscript.collect { _liveTranscript.value = it } }
+            launch { controller.latestResult.collect { _latestResult.value = it } }
 
             controller.startCall(objective)
             onConnected()
 
-            // Start duration timer
             callTimerJob?.cancel()
             callTimerJob = launch {
                 while (true) {
                     delay(1000)
                     if (_agentState.value != AgentState.COMPLETE && _agentState.value != AgentState.FAILED) {
                         _callDurationSeconds.value += 1
-                        _audioRms.value = (0.1f + (Math.random() * 0.4f)).toFloat()
+                        if (!useSip) {
+                            _audioRms.value = (0.1f + (Math.random() * 0.4f)).toFloat()
+                        }
                     }
                 }
             }
 
-            // Trigger connection after short delay
-            delay(1200)
-            controller.onCallConnected()
+            if (!useSip) {
+                delay(1200)
+                controller.onCallConnected()
+                delay(2000)
+                controller.onRemoteUtteranceReceived(
+                    com.example.localcallagent.asr.local.AsrResult("Yes, go ahead.", 0.96f)
+                )
+                delay(2200)
+                controller.onRemoteUtteranceReceived(
+                    com.example.localcallagent.asr.local.AsrResult(
+                        "Yes, we have state inspection appointments available Friday at 10 AM and 2 PM.",
+                        0.98f
+                    )
+                )
+            }
+        }
+    }
 
-            // Simulate realistic business response after 2 seconds
-            delay(2000)
-            controller.onRemoteUtteranceReceived(
-                com.example.localcallagent.asr.local.AsrResult("Yes, go ahead.", 0.96f)
-            )
+    private fun createMockTransport(): CallTransport {
+        val callState = MutableStateFlow<AppCallState>(AppCallState.Ringing)
+        val audioFlow = MutableStateFlow(PcmFrame(ShortArray(320), 8000))
+        return object : CallTransport {
+            override val state: StateFlow<AppCallState> = callState
+            override val supportsProgrammaticMedia: Boolean = true
+            override val remoteAudio = audioFlow
+            override suspend fun dial(destination: String) {
+                delay(800)
+                callState.value = AppCallState.Active
+            }
+            override suspend fun answer() {}
+            override suspend fun hangUp() {
+                callState.value = AppCallState.Disconnected()
+            }
+            override suspend fun sendDtmf(digit: Char) {}
+            override suspend fun sendAudio(frame: PcmFrame) {}
+        }
+    }
 
-            delay(2200)
-            controller.onRemoteUtteranceReceived(
-                com.example.localcallagent.asr.local.AsrResult("Yes, we have state inspection appointments available Friday at 10 AM and 2 PM.", 0.98f)
-            )
+    fun runDebugSipE2e(config: SipAccountConfig, destination: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateSipConfig(config)
+            phoneNumber.value = destination ?: phoneNumber.value
+            _registrationState.value = RegistrationState.REGISTERING
+            _sipStatusMessage.value = "Debug e2e registering with ${config.domain}…"
+            Log.i(TAG, "DEBUG_E2E_START user=${config.username} domain=${config.domain} proxy=${config.outboundProxy} dest=$destination")
+            try {
+                val transport = sipTransport ?: SipAgentTransport().also { sipTransport = it }
+                transport.register(config)
+                val reg = withTimeoutOrNull(20_000) {
+                    transport.registrationState.first {
+                        it == RegistrationState.REGISTERED || it == RegistrationState.FAILED
+                    }
+                } ?: RegistrationState.FAILED
+                _registrationState.value = reg
+                if (reg == RegistrationState.REGISTERED) {
+                    _sipStatusMessage.value = "Registered as ${config.username}@${config.domain}"
+                    Log.i(TAG, "REGISTERED")
+                    Log.i(DEBUG_TAG, "REGISTERED")
+                } else {
+                    _sipStatusMessage.value = "Registration failed"
+                    Log.i(TAG, "REGISTER_FAILED")
+                    Log.i(DEBUG_TAG, "REGISTER_FAILED")
+                    return@launch
+                }
+
+                if (!destination.isNullOrBlank()) {
+                    phoneNumber.value = destination
+                    startCall()
+                    val call = withTimeoutOrNull(25_000) {
+                        transport.state.first {
+                            it is AppCallState.Active || it is AppCallState.Disconnected
+                        }
+                    }
+                    when (call) {
+                        is AppCallState.Active -> {
+                            Log.i(TAG, "CALL_ACTIVE")
+                            Log.i(DEBUG_TAG, "CALL_ACTIVE")
+                        }
+                        is AppCallState.Disconnected -> {
+                            Log.i(TAG, "CALL_ENDED reason=${call.reason}")
+                            Log.i(DEBUG_TAG, "CALL_ENDED reason=${call.reason}")
+                        }
+                        else -> {
+                            Log.i(TAG, "CALL_TIMEOUT state=${transport.state.value}")
+                            Log.i(DEBUG_TAG, "CALL_TIMEOUT state=${transport.state.value}")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _registrationState.value = RegistrationState.FAILED
+                _sipStatusMessage.value = "Debug e2e error: ${e.message ?: e::class.java.simpleName}"
+                Log.e(TAG, "DEBUG_E2E_ERROR ${e.message ?: e::class.java.simpleName}")
+                Log.e(DEBUG_TAG, "DEBUG_E2E_ERROR ${e.message ?: e::class.java.simpleName}")
+            }
         }
     }
 
@@ -291,7 +363,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun purgePrivacyData() {
-        _liveTranscript.value = emptyList<DialogueTurn>()
+        _liveTranscript.value = emptyList()
         _latestResult.value = null
+    }
+
+    companion object {
+        private const val TAG = "MainViewModel"
+        const val DEBUG_TAG = "SipDebugE2E"
     }
 }
