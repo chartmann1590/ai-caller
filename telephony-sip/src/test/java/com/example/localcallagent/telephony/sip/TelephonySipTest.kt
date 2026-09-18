@@ -114,4 +114,33 @@ class TelephonySipTest {
         assertTrue(auth.contains("username=\"1001\""))
         assertTrue(auth.contains("nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\""))
     }
+
+    @Test
+    fun testAuthDigestUsesRequestUriNotBareDomain() {
+        // INVITE auth must hash the request-URI used in the Authorization header
+        val inviteUri = "sip:4444@sip2sip.info"
+        val authInvite = SipMessage.computeDigestAuth(
+            username = "alice",
+            realm = "sip2sip.info",
+            password = "secret",
+            method = "INVITE",
+            uri = inviteUri,
+            nonce = "abc123"
+        )
+        val authRegister = SipMessage.computeDigestAuth(
+            username = "alice",
+            realm = "sip2sip.info",
+            password = "secret",
+            method = "REGISTER",
+            uri = "sip:sip2sip.info",
+            nonce = "abc123"
+        )
+        assertTrue(authInvite.contains("uri=\"$inviteUri\""))
+        assertTrue(authRegister.contains("uri=\"sip:sip2sip.info\""))
+        // Different method/uri => different response digests
+        val respInvite = Regex("response=\"([a-f0-9]+)\"").find(authInvite)!!.groupValues[1]
+        val respRegister = Regex("response=\"([a-f0-9]+)\"").find(authRegister)!!.groupValues[1]
+        assertTrue(respInvite != respRegister)
+    }
+
 }
