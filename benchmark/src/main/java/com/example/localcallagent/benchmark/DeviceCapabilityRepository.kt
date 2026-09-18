@@ -23,7 +23,7 @@ class DeviceCapabilityRepository(
         val stat = StatFs(Environment.getDataDirectory().path)
         val availableStorageMb = (stat.availableBlocksLong * stat.blockSizeLong) / (1024 * 1024)
 
-        val arm64 = Build.SUPPORTED_ABIS.any { it.contains("arm64") }
+        val arm64 = Build.SUPPORTED_ABIS.any { it.contains("arm64") || it.contains("x86_64") }
         val telecom = context.getSystemService(TelecomManager::class.java)
         val hasTelephony = telecom != null
 
@@ -41,7 +41,7 @@ class DeviceCapabilityRepository(
                 SupportLevel.LIMITED
             }
             else -> {
-                if (!arm64) warnings.add("Non-ARM64 architecture detected.")
+                if (!arm64) warnings.add("No 64-bit ABI (arm64/x86_64) detected.")
                 if (totalRamMb < 5500) warnings.add("Insufficient RAM for on-device Gemma 4.")
                 if (availableStorageMb < 3000) warnings.add("Insufficient free storage for AI models.")
                 SupportLevel.UNSUPPORTED

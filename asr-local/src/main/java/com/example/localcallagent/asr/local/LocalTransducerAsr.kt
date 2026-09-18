@@ -32,7 +32,7 @@ class LocalTransducerAsr(
     private var isRunning = false
     private val audioBuffer = ArrayList<Short>()
 
-    // Scripted/Mock speech injector for testing
+    // Test-only injection queue (unit/instrumentation). Production app never populates this.
     var testTranscriptQueue: MutableList<String> = mutableListOf()
 
     override suspend fun start(sampleRateHz: Int) {
@@ -96,12 +96,13 @@ class LocalTransducerAsr(
     }
 
     private fun decodeAudio(samples: List<Short>): String {
-        // Fallback acoustic energy estimation if neural model not loaded
-        return if (samples.size > 8000) {
-            "Yes, we install customer tires for thirty-five dollars."
-        } else {
-            ""
+        // Honest behavior when neural weights are absent: do not invent transcripts.
+        // Unit/instrumentation tests may use testTranscriptQueue or injectRecognitionResult.
+        if (modelFile == null || !modelFile.exists()) {
+            return ""
         }
+        // Model path present but native decoder not wired in this build — still no canned text.
+        return ""
     }
 
     private fun calculateConfidence(text: String): Float {
