@@ -1,1 +1,1 @@
-PLACEHOLDER_LOAD_FROM_DISK
+LOAD_FROM_/tmp/f3b_content_only.kt
