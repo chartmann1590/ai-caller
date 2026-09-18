@@ -1,0 +1,1311 @@
+Yes — reviewing the research, I would **change the app architecture so SIP/VoIP is the primary calling method**, not an optional add-on. That gives the AI direct access to the incoming and outgoing audio streams and avoids Android’s hard restriction on capturing/injecting normal cellular-call audio. The research supports that distinction clearly: normal Android apps can control cellular calls, but autonomous bidirectional audio is practical when the app owns the SIP/VoIP media path. 
+
+## Recommended architecture
+
+The app should be a completely self-contained Android AI calling client:
+
+```text
+Android App
+│
+├── Onboarding / Device Qualification
+│   ├── Hardware check
+│   ├── Storage check
+│   ├── RAM check
+│   ├── Android/API check
+│   ├── CPU/GPU capability test
+│   ├── Model benchmark
+│   └── Download required AI models
+│
+├── User-configured VoIP client
+│   ├── SIP account
+│   ├── SIP username
+│   ├── SIP password
+│   ├── SIP domain / registrar
+│   ├── outbound proxy
+│   ├── transport: UDP/TCP/TLS
+│   ├── STUN/TURN
+│   ├── codecs
+│   └── connection test
+│
+├── SIP/RTP Calling Engine
+│   ├── SIP signaling
+│   ├── RTP/SRTP audio
+│   ├── jitter buffer
+│   ├── codec decode
+│   ├── codec encode
+│   ├── DTMF
+│   └── Android ConnectionService
+│
+├── Local AI Pipeline
+│   ├── VAD
+│   ├── ASR / speech-to-text
+│   ├── Gemma 4 E2B
+│   ├── conversation controller
+│   ├── safety/action validator
+│   └── local TTS
+│
+└── UI
+    ├── Create call task
+    ├── Business/number
+    ├── What should AI ask?
+    ├── Call screen
+    ├── Live transcription
+    ├── Take over
+    ├── End call
+    └── Result summary
+```
+
+The important part is that **the user's own VoIP provider handles the telephone connectivity**. Your servers do not need to operate a telephone network, buy numbers, process the conversation, or run an AI service.
+
+The app would essentially behave like a normal SIP softphone with an AI sitting directly inside its local audio pipeline.
+
+---
+
+# 1. First-launch onboarding
+
+I would make onboarding mandatory before the user reaches the normal interface.
+
+The first screen should explain:
+
+> This app runs its speech recognition, AI, and speech generation directly on your phone.
+>
+> Your phone must meet certain performance requirements.
+>
+> Several gigabytes of AI models will be downloaded before AI calling can be used.
+
+Then run the **Device Qualification Test**.
+
+### Hard checks
+
+For the first production release I would use approximately:
+
+| Check                 | Requirement                        |
+| --------------------- | ---------------------------------- |
+| Android               | Android 12 / API 31+               |
+| Architecture          | ARM64                              |
+| RAM                   | **8 GB minimum**                   |
+| Recommended RAM       | **12 GB+**                         |
+| Free storage          | **At least 6 GB**                  |
+| Recommended storage   | **8 GB+ free**                     |
+| CPU                   | 64-bit modern ARM                  |
+| Hardware acceleration | GPU/NPU preferred                  |
+| Internet              | Required for model downloads + SIP |
+| Microphone            | Required for human takeover        |
+| Audio output          | Required                           |
+| Battery               | warn below ~20%                    |
+
+These are engineering minimums rather than Google's official requirements; the research recommends roughly 8 GB RAM as the practical floor for Gemma 4 E2B and 12 GB as the preferred level. 
+
+But **RAM alone should not determine compatibility**.
+
+The app should benchmark the actual phone.
+
+---
+
+# 2. Real device performance benchmark
+
+During onboarding, after the base libraries initialize, run a small benchmark.
+
+Test:
+
+```text
+✓ Available memory
+✓ CPU architecture
+✓ GPU backend availability
+✓ LiteRT-LM backend initialization
+✓ model memory allocation
+✓ sustained inference
+✓ thermal state
+✓ TTS performance
+✓ ASR performance
+```
+
+Once the main model has downloaded, run something like:
+
+```text
+Loading AI...
+
+Testing response speed...
+Testing speech recognition...
+Testing speech generation...
+
+Device AI score: 87/100
+
+✓ AI calling supported
+✓ GPU acceleration available
+✓ Expected response delay: ~0.9 seconds
+```
+
+I would use three support levels.
+
+### Green — Supported
+
+```text
+AI Calling Supported
+
+RAM: 16 GB ✓
+Storage: 174 GB free ✓
+GPU acceleration: ✓
+AI response speed: Excellent
+Speech recognition: Excellent
+
+Continue
+```
+
+### Yellow — May work poorly
+
+For something such as an 8 GB phone:
+
+```text
+AI Calling May Have Reduced Performance
+
+Your phone meets the minimum requirements, but AI
+responses may occasionally be slower.
+
+RAM: 8 GB ⚠
+GPU acceleration: ✓
+AI response speed: Acceptable
+
+You may continue.
+```
+
+### Red — Unsupported / experimental
+
+For example:
+
+```text
+Your Device Is Below the Recommended Requirements
+
+RAM: 4 GB
+Minimum recommended: 8 GB
+
+AI calling may:
+• respond very slowly
+• close unexpectedly
+• overheat the phone
+• fail during calls
+
+You can continue in experimental mode, but reliable
+operation is not expected.
+
+[Exit]
+
+[Continue Anyway]
+```
+
+I **would not completely prohibit installation** unless there is an architectural problem such as a non-ARM64 device.
+
+Warn the user and allow an experimental override.
+
+---
+
+# 3. Model downloads during onboarding
+
+Do **not package several gigabytes of models in the APK**.
+
+Install the small application first and download the models afterward.
+
+The model manager should look roughly like:
+
+```text
+AI Setup
+
+Gemma 4 E2B
+2.58 GB
+[Downloading ██████████ 72%]
+
+Speech Recognition
+~300–800 MB
+[Waiting]
+
+Voice Model
+~100–500 MB
+[Waiting]
+
+Voice Detection
+~5–20 MB
+[Waiting]
+
+Required storage:
+Approximately 4.5 GB
+```
+
+The research already identifies Gemma 4 E2B as the most practical primary LLM, with a roughly 2.58 GB LiteRT-LM package and very good flagship Android performance. 
+
+My initial stack would be:
+
+```text
+LLM
+Gemma 4 E2B
+LiteRT-LM
+
+ASR
+sherpa-onnx compatible streaming model
+or another streaming Conformer/transducer
+
+VAD
+Silero-style or lightweight LiteRT VAD
+
+TTS
+offline neural TTS
+ONNX/LiteRT
+
+Runtime
+LiteRT-LM
+ONNX Runtime Mobile where necessary
+```
+
+I would **not rely exclusively on Android's built-in SpeechRecognizer or Android TTS**, because behavior and offline availability vary by manufacturer.
+
+Everything required for an AI call should be installed by the app.
+
+---
+
+# 4. Model manager
+
+Create a proper model package system rather than hardcoding downloads.
+
+Example:
+
+```kotlin
+data class ModelPackage(
+    val id: String,
+    val name: String,
+    val version: String,
+    val type: ModelType,
+    val downloadUrl: String,
+    val sizeBytes: Long,
+    val sha256: String,
+    val minimumRamMb: Int
+)
+```
+
+Models:
+
+```text
+llm-gemma4-e2b
+asr-streaming-en
+tts-en-default
+vad-default
+```
+
+Every downloaded model should receive:
+
+```text
+SHA-256 validation
+download resume support
+version validation
+available-space validation
+atomic installation
+corruption detection
+```
+
+Never load a partially downloaded model.
+
+---
+
+# 5. Model selection based upon the phone
+
+I actually wouldn't force every device to use exactly the same LLM.
+
+The capability checker could recommend:
+
+```text
+6 GB RAM
+→ lightweight 1B model
+
+8–11 GB RAM
+→ Gemma 4 E2B
+
+12+ GB RAM
+→ Gemma 4 E2B recommended
+→ optionally offer E4B
+
+16+ GB high-end phone
+→ E2B fast mode
+→ E4B quality mode
+```
+
+For version 1, however, I would keep it simpler:
+
+**Gemma 4 E2B is the officially supported model.**
+
+Then add E4B later.
+
+---
+
+# 6. VoIP configuration during onboarding
+
+After AI setup:
+
+## Set up calling
+
+Give users two choices:
+
+```text
+How will you make calls?
+
+◉ I already have a SIP/VoIP account
+
+○ Help me understand what I need
+```
+
+The app must **not lock users into Twilio, Telnyx, your own provider, or anything else**.
+
+It should support standard SIP.
+
+Configuration:
+
+```text
+Account Name
+Home VoIP
+
+SIP Username
+1001
+
+Authentication Username
+1001
+
+Password
+••••••••••
+
+SIP Server
+sip.example.com
+
+Registrar
+sip.example.com
+
+Port
+5060
+
+Transport
+TLS
+TCP
+UDP
+
+Outbound Proxy
+optional
+
+Display Name
+Charles
+
+STUN Server
+optional
+
+TURN Server
+optional
+```
+
+Advanced configuration:
+
+```text
+Registration interval
+NAT keepalive
+SRTP
+ICE
+STUN
+TURN
+DTMF mode
+codec priority
+IPv4 / IPv6
+```
+
+---
+
+# 7. VoIP codecs
+
+For the first version I'd support at least:
+
+```text
+Opus
+G.711 μ-law / PCMU
+G.711 A-law / PCMA
+```
+
+Later:
+
+```text
+G.722
+G.729 where licensing permits
+```
+
+For compatibility with ordinary PSTN SIP providers, **PCMU and PCMA are important**.
+
+For quality and bandwidth, prefer Opus where supported.
+
+---
+
+# 8. Test VoIP account
+
+After configuration:
+
+```text
+Testing VoIP account...
+
+✓ DNS resolved
+✓ SIP server reachable
+✓ TLS connection
+✓ Authentication
+✓ SIP registration
+✓ Audio codec supported
+✓ NAT traversal
+✓ RTP receive
+✓ RTP transmit
+
+Your VoIP account is ready.
+```
+
+Do **not let them reach the AI call screen with a broken SIP configuration**.
+
+Include:
+
+**Make test call**
+
+This can call a number of the user's choice or an echo/test service supported by their provider.
+
+---
+
+# 9. SIP library
+
+Do not write a SIP stack yourself.
+
+Use a mature SIP/VoIP implementation.
+
+The architecture should hide the implementation behind:
+
+```kotlin
+interface VoipClient {
+
+    val registrationState:
+        StateFlow<RegistrationState>
+
+    val callState:
+        StateFlow<CallState>
+
+    suspend fun register(
+        config: SipAccount
+    )
+
+    suspend fun call(
+        destination: String
+    )
+
+    suspend fun hangup()
+
+    suspend fun sendDtmf(
+        digit: Char
+    )
+
+    val incomingAudio:
+        Flow<PcmFrame>
+
+    suspend fun sendAudio(
+        frame: PcmFrame
+    )
+}
+```
+
+The AI code should **never know anything about SIP**.
+
+It sees PCM audio.
+
+---
+
+# 10. Android Telecom integration
+
+Although we're using VoIP, integrate it with Android `ConnectionService`.
+
+That gives the app a normal Android calling experience:
+
+```text
+lock-screen call UI
+Bluetooth controls
+car audio
+headset buttons
+audio routing
+system call coordination
+notifications
+```
+
+Android basically sees:
+
+```text
+AI Caller
+      ↓
+ConnectionService
+      ↓
+SIP transport
+      ↓
+VoIP Provider
+      ↓
+PSTN
+      ↓
+Business
+```
+
+The research specifically identifies this app-owned SIP model as the practical route for autonomous calling. 
+
+---
+
+# 11. Actual AI voice pipeline
+
+Once a SIP call answers:
+
+```text
+Business speaks
+      ↓
+RTP packets
+      ↓
+codec decoder
+      ↓
+PCM audio
+      ↓
+VAD
+      ↓
+local streaming ASR
+      ↓
+text
+      ↓
+conversation controller
+      ↓
+Gemma 4 E2B
+      ↓
+validated AgentDecision
+      ↓
+local TTS
+      ↓
+PCM
+      ↓
+codec encoder
+      ↓
+RTP
+      ↓
+Business hears AI
+```
+
+**Nothing goes to an AI server.**
+
+The user's SIP provider obviously carries the actual telephone audio because that is how a telephone call works.
+
+---
+
+# 12. The conversation controller
+
+I would not allow Gemma to independently control everything.
+
+Have a deterministic state machine:
+
+```text
+IDLE
+↓
+PREPARING
+↓
+DIALING
+↓
+RINGING
+↓
+ANSWERED
+↓
+DISCLOSURE
+↓
+ASKING
+↓
+LISTENING
+↓
+THINKING
+↓
+RESPONDING
+↓
+LISTENING
+     ↓
+ANSWER_RECEIVED
+↓
+CONFIRMING
+↓
+GOODBYE
+↓
+COMPLETE
+```
+
+Gemma supplies **decisions**, not unrestricted commands.
+
+Example:
+
+```json
+{
+    "action": "SPEAK",
+    "speech": "Does that price include balancing?",
+    "confidence": 0.94,
+    "reasonCode": "PRICE_CLARIFICATION"
+}
+```
+
+Allowed actions:
+
+```text
+SPEAK
+LISTEN
+CLARIFY
+SEND_DTMF
+FINISH
+HANDOFF
+ABORT
+```
+
+---
+
+# 13. User creates a call task
+
+The main UI should be extremely simple.
+
+```text
+What would you like me to do?
+
+Business
+Mike's Tire Center
+
+Phone
+(518) 555-1234
+
+Ask them:
+Do you install tires purchased somewhere else,
+and how much would installation be for four tires?
+
+Optional instructions:
+Ask whether balancing is included.
+
+[Call For Me]
+```
+
+Then show the AI's interpretation:
+
+```text
+I'm going to call:
+
+Mike's Tire Center
+518-555-1234
+
+Primary question:
+Do you install customer-supplied tires?
+
+Follow-up:
+How much for four tires?
+
+Clarification:
+Does that include balancing?
+
+I will NOT:
+• schedule anything
+• purchase anything
+• provide payment information
+
+[Start Call]
+```
+
+---
+
+# 14. Live call interface
+
+Something like:
+
+```text
+Mike's Tire Center
+02:14
+
+AI CALLING
+
+Business:
+"Yes, we install customer tires..."
+
+AI:
+"Great. How much would installation be for four?"
+
+Business:
+"It's $35 per tire including balancing."
+
+AI:
+"Just to confirm, that's $140 total?"
+
+[ TAKE OVER ]
+
+[ MUTE AI ]
+
+[ END CALL ]
+```
+
+There absolutely needs to be a giant **TAKE OVER** button.
+
+When clicked:
+
+```text
+AI STOPS
+↓
+microphone routes into SIP uplink
+↓
+user speaks normally
+```
+
+Then optionally:
+
+```text
+[Resume AI]
+```
+
+---
+
+# 15. Barge-in support
+
+If the business starts talking while the AI is talking:
+
+```text
+remote speech detected
+↓
+stop TTS immediately
+↓
+clear unsent TTS audio
+↓
+listen
+```
+
+Target interruption time:
+
+**under ~250 ms**.
+
+The research recommends beginning with controlled half-duplex plus interruption rather than trying to make both sides speak freely simultaneously. 
+
+---
+
+# 16. IVR support
+
+This is important for real-world business calls.
+
+Gemma needs the ability to hear:
+
+> Press 1 for sales. Press 2 for customer service.
+
+ASR:
+
+```text
+"press one for sales..."
+```
+
+Gemma:
+
+```json
+{
+  "action": "SEND_DTMF",
+  "dtmf": "1"
+}
+```
+
+The controller validates it.
+
+Then SIP sends RFC2833/event DTMF or whatever negotiated method applies.
+
+---
+
+# 17. Voicemail handling
+
+Detect common voicemail patterns.
+
+The agent can either:
+
+```text
+Hang up
+```
+
+or optionally:
+
+```text
+Leave a message
+```
+
+But I would default MVP behavior to:
+
+**Do not leave messages.**
+
+Return:
+
+```text
+No answer — voicemail reached.
+```
+
+---
+
+# 18. Results after the call
+
+Do not overwhelm the user with a transcript by default.
+
+Show:
+
+```text
+CALL COMPLETE
+
+Mike's Tire Center
+
+Answer
+
+Yes, they install customer-supplied tires.
+
+Price:
+$35 per tire
+
+Four tires:
+$140
+
+Balancing:
+Included
+
+Confidence:
+High
+
+Call duration:
+1:48
+```
+
+Optional:
+
+```text
+View transcript
+```
+
+---
+
+# 19. Privacy
+
+Default behavior:
+
+```text
+Audio recording: NO
+Transcript saved: NO
+
+Only the final structured result is saved.
+```
+
+Optional setting:
+
+```text
+Save transcripts locally
+```
+
+If enabled:
+
+```text
+encrypted local storage
+Android Keystore
+excluded from cloud backup
+user-controlled deletion
+```
+
+No conversation data in:
+
+```text
+Firebase Analytics
+Crashlytics
+logs
+remote telemetry
+```
+
+---
+
+# 20. Firebase should not run the AI
+
+Firebase could eventually be useful for things like:
+
+```text
+app configuration
+anonymous crash metrics without conversation content
+model manifest/version information
+optional user accounts
+```
+
+But the **calling and AI path shouldn't require Firebase at all**.
+
+The important part should continue working if your backend disappears.
+
+---
+
+# 21. Android project structure
+
+I'd structure it approximately:
+
+```text
+app/
+
+core-model/
+core-privacy/
+core-storage/
+
+onboarding/
+device-check/
+model-manager/
+
+voip-api/
+voip-sip/
+telecom-integration/
+
+audio-core/
+vad-local/
+asr-local/
+tts-local/
+
+llm-litert/
+agent-orchestrator/
+
+call-engine/
+call-history/
+
+benchmark/
+test-fixtures/
+```
+
+That separation is important.
+
+You should be able to replace the SIP library, ASR model, TTS model, or Gemma model without rewriting the application.
+
+---
+
+# 22. Onboarding flow
+
+The complete first launch should therefore be:
+
+```text
+WELCOME
+   ↓
+Privacy explanation
+   ↓
+Device requirements
+   ↓
+Hardware scan
+   ↓
+Storage check
+   ↓
+Compatibility rating
+   ↓
+Download AI components
+   ↓
+Verify model hashes
+   ↓
+Run AI benchmark
+   ↓
+Performance rating
+   ↓
+Configure SIP/VoIP
+   ↓
+Test SIP registration
+   ↓
+Test audio
+   ↓
+Request microphone permission
+   ↓
+Optional notification permission
+   ↓
+Tutorial
+   ↓
+READY
+```
+
+That is the flow I'd build.
+
+---
+
+# 23. Hardware warnings
+
+The compatibility checker should maintain a result such as:
+
+```kotlin
+enum class SupportLevel {
+    EXCELLENT,
+    SUPPORTED,
+    LIMITED,
+    UNSUPPORTED
+}
+```
+
+And:
+
+```kotlin
+data class DeviceQualification(
+    val supportLevel: SupportLevel,
+    val androidApi: Int,
+    val totalRamMb: Long,
+    val availableStorageMb: Long,
+    val arm64: Boolean,
+    val gpuAvailable: Boolean,
+    val llmTokensPerSecond: Float?,
+    val llmFirstTokenMs: Long?,
+    val asrRealtimeFactor: Float?,
+    val ttsFirstAudioMs: Long?,
+    val thermalStatus: Int,
+    val warnings: List<String>
+)
+```
+
+This should be stored locally so you're not benchmarking the entire device at every launch.
+
+---
+
+# 24. Re-check after Android/model updates
+
+The user should be able to run:
+
+```text
+Settings
+→ AI Engine
+→ Test Device Performance
+```
+
+Run it automatically again when:
+
+```text
+LLM changes
+ASR changes
+TTS changes
+major app upgrade occurs
+```
+
+That protects you from an updated model suddenly making an older device unusable.
+
+---
+
+# 25. Model update system
+
+Settings:
+
+```text
+AI Models
+
+Gemma 4 E2B
+Version 1
+2.58 GB
+✓ Installed
+
+Speech recognition
+Version 3
+621 MB
+✓ Installed
+
+Voice model
+Version 2
+248 MB
+✓ Installed
+
+Total:
+3.45 GB
+
+[Check for updates]
+
+[Repair models]
+```
+
+Never update models immediately before a call.
+
+---
+
+# 26. Minimum viable product
+
+I would deliberately **not attempt every feature initially**.
+
+### MVP 1
+
+Get this working:
+
+```text
+SIP account setup
+↓
+SIP registration
+↓
+manual test calls
+↓
+incoming RTP audio
+↓
+outgoing PCM
+```
+
+No AI.
+
+### MVP 2
+
+Add:
+
+```text
+local TTS
+↓
+TTS → RTP
+```
+
+Make the business hear generated speech.
+
+### MVP 3
+
+Add:
+
+```text
+RTP → ASR
+```
+
+Display what the business says.
+
+### MVP 4
+
+Add:
+
+```text
+Gemma 4 E2B
+```
+
+But just produce suggestions.
+
+### MVP 5
+
+Connect the whole pipeline:
+
+```text
+ASR
+↓
+Gemma
+↓
+TTS
+```
+
+### MVP 6
+
+Add:
+
+```text
+state machine
+barge-in
+DTMF
+IVRs
+takeover
+structured results
+```
+
+### MVP 7
+
+Add:
+
+```text
+model installer
+device checker
+full onboarding
+privacy hardening
+```
+
+Then beta.
+
+---
+
+# 27. One architectural decision I would change from the original research
+
+The research presents both:
+
+```text
+PSTN cellular control
+and
+SIP autonomous calling
+```
+
+as major portions of the application. 
+
+For **this app**, I wouldn't spend much development time on becoming the phone's default cellular dialer initially.
+
+Your core use case is:
+
+> **AI calls a business and independently talks to them.**
+
+Cellular doesn't give us the media streams needed to accomplish that.
+
+Therefore make:
+
+### Primary product
+
+**User-supplied SIP/VoIP account → AI autonomous calling**
+
+And potentially later add:
+
+### Secondary feature
+
+**SIM call → human makes call with AI assistance**
+
+That keeps development focused on the feature you actually care about.
+
+---
+
+# 28. The version I would build
+
+For version 1:
+
+```text
+Android 12+
+arm64-v8a
+
+Kotlin
+Jetpack Compose
+
+SIP softphone built into app
+user enters own SIP provider credentials
+
+ConnectionService
+SIP/RTP
+SRTP where supported
+
+Gemma 4 E2B
+LiteRT-LM
+
+Streaming local ASR
+ONNX Runtime Mobile
+
+Local neural TTS
+ONNX/LiteRT
+
+Local VAD
+
+No cloud AI
+No cloud transcription
+No cloud TTS
+
+Models downloaded during onboarding
+
+8 GB RAM minimum warning
+12 GB recommended
+
+~6 GB free-storage requirement
+
+Real-device performance benchmark
+
+AI can:
+ask questions
+understand responses
+ask clarifying questions
+navigate simple IVRs
+send DTMF
+summarize answers
+
+AI cannot initially:
+buy things
+give payment details
+enter contracts
+schedule appointments without explicit later support
+```
+
+The research indicates this combination is technically practical because the app owns the SIP media path, while Gemma 4 E2B and the speech stack can execute locally on capable Android hardware. 
+
+## Development order
+
+The most important thing is **not to start by building the pretty UI or even Gemma integration**.
+
+Build it in this order:
+
+1. **SIP client that can successfully call a real telephone number.**
+2. **Get decoded incoming PCM and inject generated PCM into the call.**
+3. **Local TTS → SIP** and verify the person can hear it clearly.
+4. **SIP → local ASR** and verify business speech is transcribed.
+5. **Add Gemma 4 E2B.**
+6. **Add the deterministic agent state machine.**
+7. **Add DTMF/IVR handling, barge-in and user takeover.**
+8. **Build model download/verification management.**
+9. **Build the hardware qualification benchmark.**
+10. **Wrap everything in the polished onboarding and call UI.**
+
+If **#2 works reliably**, the hardest architectural problem has effectively been solved. Everything after that becomes normal Android/audio/ML engineering rather than fighting Android's cellular telephony restrictions.
