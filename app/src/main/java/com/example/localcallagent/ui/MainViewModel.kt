@@ -19,6 +19,7 @@ import com.example.localcallagent.core.model.StructuredCallResult
 import com.example.localcallagent.core.model.SupportLevel
 import com.example.localcallagent.llm.litert.DeterministicFallbackModel
 import com.example.localcallagent.llm.litert.LiteRtLmGemmaModel
+import com.example.localcallagent.models.OnDeviceModelManager
 import com.example.localcallagent.telephony.api.RegistrationState
 import com.example.localcallagent.telephony.sip.SipAgentTransport
 import com.example.localcallagent.tts.local.LocalStreamingNeuralTts
@@ -40,7 +41,7 @@ data class QualificationState(
     val storageFreeGb: Long = 0,
     val osVersion: String = "",
     val cpuArch: String = "",
-    val failureReasons: List<String> = emptyList()
+    val failureReasons: List[String] = emptyList()
 )
 
 data class ModelDownloadState(
@@ -55,18 +56,19 @@ data class ModelDownloadState(
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val capabilityRepo = DeviceCapabilityRepository(application)
+    private val modelManager = OnDeviceModelManager(application)
 
     private val _qualificationState = MutableStateFlow(QualificationState())
-    val qualificationState: StateFlow<QualificationState> = _qualificationState.asStateFlow()
+    val qualificationState: StateFlow[QualificationState] = _qualificationState.asStateFlow()
 
     private val _modelState = MutableStateFlow(ModelDownloadState())
-    val modelState: StateFlow<ModelDownloadState> = _modelState.asStateFlow()
+    val modelState: StateFlow[ModelDownloadState] = _modelState.asStateFlow()
 
-    private val _benchmarkReport = MutableStateFlow<BenchmarkReport?>(null)
-    val benchmarkReport: StateFlow<BenchmarkReport?> = _benchmarkReport.asStateFlow()
+    private val _benchmarkReport = MutableStateFlow[BenchmarkReport?](null)
+    val benchmarkReport: StateFlow[BenchmarkReport?] = _benchmarkReport.asStateFlow()
 
     private val _isBenchmarking = MutableStateFlow(false)
-    val isBenchmarking: StateFlow<Boolean> = _isBenchmarking.asStateFlow()
+    val isBenchmarking: StateFlow[Boolean] = _isBenchmarking.asStateFlow()
 
     private val _sipConfig = MutableStateFlow(
         SipAccountConfig(
@@ -77,16 +79,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             displayName = null
         )
     )
-    val sipConfig: StateFlow<SipAccountConfig> = _sipConfig.asStateFlow()
+    val sipConfig: StateFlow[SipAccountConfig] = _sipConfig.asStateFlow()
 
     private val _registrationState = MutableStateFlow(RegistrationState.UNREGISTERED)
-    val registrationState: StateFlow<RegistrationState> = _registrationState.asStateFlow()
+    val registrationState: StateFlow[RegistrationState] = _registrationState.asStateFlow()
 
     private val _sipStatusMessage = MutableStateFlow("Not registered — enter SIP credentials and tap Register")
-    val sipStatusMessage: StateFlow<String> = _sipStatusMessage.asStateFlow()
+    val sipStatusMessage: StateFlow[String] = _sipStatusMessage.asStateFlow()
 
-    private val _callErrorMessage = MutableStateFlow<String?>(null)
-    val callErrorMessage: StateFlow<String?> = _callErrorMessage.asStateFlow()
+    private val _callErrorMessage = MutableStateFlow[String?](null)
+    val callErrorMessage: StateFlow[String?] = _callErrorMessage.asStateFlow()
 
     /** Real SIP transport. Null until registerSip() / debug e2e creates one. */
     private var sipTransport: SipAgentTransport? = null
@@ -99,19 +101,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val clarifyingInstructions = MutableStateFlow("")
 
     private val _agentState = MutableStateFlow(AgentState.PRE_CALL)
-    val agentState: StateFlow<AgentState> = _agentState.asStateFlow()
+    val agentState: StateFlow[AgentState] = _agentState.asStateFlow()
 
     private val _callDurationSeconds = MutableStateFlow(0L)
-    val callDurationSeconds: StateFlow<Long> = _callDurationSeconds.asStateFlow()
+    val callDurationSeconds: StateFlow[Long] = _callDurationSeconds.asStateFlow()
 
-    private val _liveTranscript = MutableStateFlow<List<DialogueTurn>>(emptyList())
-    val liveTranscript: StateFlow<List<DialogueTurn>> = _liveTranscript.asStateFlow()
+    private val _liveTranscript = MutableStateFlow[List[DialogueTurn]](emptyList())
+    val liveTranscript: StateFlow[List[DialogueTurn]] = _liveTranscript.asStateFlow()
 
-    private val _latestResult = MutableStateFlow<StructuredCallResult?>(null)
-    val latestResult: StateFlow<StructuredCallResult?> = _latestResult.asStateFlow()
+    private val _latestResult = MutableStateFlow[StructuredCallResult?](null)
+    val latestResult: StateFlow[StructuredCallResult?] = _latestResult.asStateFlow()
 
     private val _audioRms = MutableStateFlow(0.15f)
-    val audioRms: StateFlow<Float> = _audioRms.asStateFlow()
+    val audioRms: StateFlow[Float] = _audioRms.asStateFlow()
 
     private var activeController: ConversationController? = null
     private var callTimerJob: Job? = null
@@ -119,6 +121,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         runDeviceQualification()
         refreshModelState()
+        // Kick off on-device model unpack when missing (non-blocking).
+        if (!_modelState.value.isDownloaded) {
+            downloadModels()
+        }
     }
 
     fun runDeviceQualification() {
@@ -154,30 +160,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun refreshModelState() {
-        val modelsDir = File(getApplication<Application>().filesDir, "models")
-        val asrReady = File(modelsDir, "asr.onnx").let { it.exists() && it.length() > 0 }
-        val ttsReady = File(modelsDir, "tts.onnx").let { it.exists() && it.length() > 0 }
-        val llmReady = listOf("gemma.tflite", "gemma.bin", "llm.litertlm")
-            .any { File(modelsDir, it).exists() }
-        val allReady = asrReady && ttsReady && llmReady
-        val anyReady = asrReady || ttsReady || llmReady
-        val status = when {
-            allReady -> "Local model files present under filesDir/models (ASR/TTS/LLM)"
-            anyReady -> "Partial models on device — missing: " + listOfNotNull(
-                if (!asrReady) "ASR" else null,
-                if (!ttsReady) "TTS" else null,
-                if (!llmReady) "LLM" else null
-            ).joinToString(", ") + ". Dialogue uses DeterministicFallbackModel until LLM weights are installed."
-            else -> "No on-device model weights under filesDir/models. ASR will not invent transcripts; LLM uses DeterministicFallbackModel; TTS uses LocalStreamingNeuralTts synthesis until weights are installed."
-        }
+        val snap = modelManager.inspect()
         _modelState.value = ModelDownloadState(
-            isDownloaded = allReady,
-            progressPercent = listOf(asrReady, ttsReady, llmReady).count { it } * 33 + if (allReady) 1 else 0,
-            statusText = status,
-            asrReady = asrReady,
-            ttsReady = ttsReady,
-            llmReady = llmReady
+            isDownloaded = snap.isDownloaded,
+            progressPercent = snap.progressPercent,
+            statusText = snap.statusText,
+            asrReady = snap.asrReady,
+            ttsReady = snap.ttsReady,
+            llmReady = snap.llmReady
         )
+        if (snap.isDownloaded) {
+            Log.i(TAG, "MODEL_READY asr=${snap.asrReady} tts=${snap.ttsReady} llm=${snap.llmReady}")
+        }
+    }
+
+    /**
+     * Unpacks bundled on-device pipeline models (SHA-256 verified) into filesDir/models.
+     * Optionally fetches full Gemma weights when MODEL_DOWNLOAD_BASE_URL is set in local.properties.
+     * Never uploads audio/transcripts. Fails honestly on integrity errors.
+     */
+    fun downloadModels() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _modelState.value = _modelState.value.copy(
+                statusText = "Downloading / unpacking on-device models…",
+                progressPercent = 5
+            )
+            val job = launch {
+                modelManager.progress.collect { p ->
+                    _modelState.value = ModelDownloadState(
+                        isDownloaded = p.isDownloaded,
+                        progressPercent = p.progressPercent,
+                        statusText = p.statusText,
+                        asrReady = p.asrReady,
+                        ttsReady = p.ttsReady,
+                        llmReady = p.llmReady
+                    )
+                }
+            }
+            try {
+                val result = modelManager.ensureModelsInstalled()
+                _modelState.value = ModelDownloadState(
+                    isDownloaded = result.isDownloaded,
+                    progressPercent = if (result.isDownloaded) 100 else result.progressPercent,
+                    statusText = result.errorMessage?.let { "Download failed: $it" } ?: result.statusText,
+                    asrReady = result.asrReady,
+                    ttsReady = result.ttsReady,
+                    llmReady = result.llmReady
+                )
+                if (result.isDownloaded) {
+                    Log.i(TAG, "MODEL_READY")
+                    Log.i(DEBUG_TAG, "MODEL_READY")
+                } else {
+                    Log.e(TAG, "MODEL_DOWNLOAD_FAILED ${result.errorMessage ?: result.statusText}")
+                    Log.e(DEBUG_TAG, "MODEL_DOWNLOAD_FAILED")
+                }
+            } finally {
+                job.cancel()
+            }
+        }
     }
 
     fun runBenchmark() {
@@ -297,12 +337,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             Log.i(TAG, "Using SipAgentTransport for live call dest=${objective.destination}")
 
-            val modelsDir = File(getApplication<Application>().filesDir, "models")
-            val asrModel = File(modelsDir, "asr.onnx").takeIf { it.exists() }
-            val ttsModel = File(modelsDir, "tts.onnx").takeIf { it.exists() }
-            val llmModel = listOf("gemma.tflite", "gemma.bin", "llm.litertlm")
-                .map { File(modelsDir, it) }
-                .firstOrNull { it.exists() }
+            // Prefer manager-resolved paths (pipeline package or full Gemma weights)
+            val asrModel = modelManager.asrModelFile()
+            val ttsModel = modelManager.ttsModelFile()
+            val llmModel = modelManager.llmModelFile()
+            if (llmModel != null) {
+                Log.i(TAG, "MODEL_READY path=${llmModel.name} bytes=${llmModel.length()}")
+                Log.i(DEBUG_TAG, "MODEL_READY")
+            } else {
+                Log.w(TAG, "MODEL_MISSING_LLM using DeterministicFallbackModel")
+            }
 
             val asr = LocalTransducerAsr(modelFile = asrModel)
             val tts = LocalStreamingNeuralTts(modelFile = ttsModel)
