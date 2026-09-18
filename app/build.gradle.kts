@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +19,21 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Optional Gemma weight URL from local.properties (never commit secrets/binaries).
+        val localProps = Properties()
+        val localFile = rootProject.file("local.properties")
+        if (localFile.exists()) {
+            localFile.inputStream().use { localProps.load(it) }
+        }
+        val rawModelUrl: String = localProps.getProperty("model.download.base.url")
+            ?: (project.findProperty("model.download.base.url") as String?)
+            ?: ""
+        buildConfigField(
+            "String",
+            "MODEL_DOWNLOAD_BASE_URL",
+            "\"" + rawModelUrl.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
     }
 
     flavorDimensions += "mode"
