@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_FAIL_CHECK
+{{LOAD_FROM:/tmp/vm_raw_content.kt}}
