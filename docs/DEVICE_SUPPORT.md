@@ -64,3 +64,11 @@ During onboarding, the app executes `BenchmarkRunner` to determine real-world ha
 └───────────────────────┴──────────────┴─────────────────────┘
 ```
 If the composite score falls below 70/100, autonomous calling is gated to prevent poor conversational latency, and the user is advised to use assisted/guided calling mode.
+
+
+## Emulator / x86_64 note
+
+Android Emulator (`x86_64`) can run the SIP lab and the **pipeline** on-device models
+(ASR/TTS/LLM LCAM packages). Full Gemma 4 E2B LiteRT-LM inference targets **arm64-v8a**
+devices with NPU/GPU. On emu, dialogue uses the on-device pipeline +
+`DeterministicFallbackModel` while still driving real SIP audio send/receive.
