@@ -113,7 +113,7 @@ fun ResultSummaryScreen(
                     color = SafetyShieldGreen
                 )
                 Text(
-                    text = latestResult?.answer ?: "Appointments available Friday at 10 AM and 2 PM.",
+                    text = latestResult?.answer ?: "No answer captured — call may have failed or models were unavailable.",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = DarkTextPrimary

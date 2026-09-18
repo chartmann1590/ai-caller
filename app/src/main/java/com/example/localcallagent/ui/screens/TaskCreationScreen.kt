@@ -28,6 +28,10 @@ fun TaskCreationScreen(
     val phoneNumber by viewModel.phoneNumber.collectAsState()
     val primaryQuestion by viewModel.primaryQuestion.collectAsState()
     val clarifyingInstructions by viewModel.clarifyingInstructions.collectAsState()
+    val registrationState by viewModel.registrationState.collectAsState()
+    val sipStatusMessage by viewModel.sipStatusMessage.collectAsState()
+    val callErrorMessage by viewModel.callErrorMessage.collectAsState()
+    val isRegistered = registrationState == com.example.localcallagent.telephony.api.RegistrationState.REGISTERED
 
     Column(
         modifier = Modifier
@@ -80,7 +84,7 @@ fun TaskCreationScreen(
                     value = businessName,
                     onValueChange = { viewModel.businessName.value = it },
                     label = { Text("Business Name") },
-                    placeholder = { Text("e.g., Mike's Auto Care, Valley Pharmacy") },
+                    placeholder = { Text("Business name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Storefront, contentDescription = null, tint = BrandPrimary) }
@@ -90,7 +94,7 @@ fun TaskCreationScreen(
                     value = phoneNumber,
                     onValueChange = { viewModel.phoneNumber.value = it },
                     label = { Text("Phone Number (E.164)") },
-                    placeholder = { Text("+15185550199") },
+                    placeholder = { Text("SIP URI or E.164 number") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = BrandPrimary) }
@@ -162,11 +166,27 @@ fun TaskCreationScreen(
             }
         }
 
-        // Start Call Button
+        Text(
+            text = if (isRegistered) sipStatusMessage else "SIP not registered — register in Settings before calling",
+            fontSize = 12.sp,
+            color = if (isRegistered) SafetyShieldGreen else WarningAmber,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        callErrorMessage?.let { err ->
+            Text(
+                text = err,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        // Start Call Button — real SIP only; disabled until registered
         Button(
             onClick = {
                 viewModel.startCall(onConnected = onStartCall)
             },
+            enabled = isRegistered && phoneNumber.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
