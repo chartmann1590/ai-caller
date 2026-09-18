@@ -12,6 +12,8 @@ import com.example.localcallagent.core.privacy.LocalEncryptedTranscriptStore
 import com.example.localcallagent.core.privacy.Redactor
 import com.example.localcallagent.llm.litert.DeterministicFallbackModel
 import com.example.localcallagent.telephony.api.CallTransport
+import com.example.localcallagent.telephony.api.RegistrationState
+import com.example.localcallagent.telephony.sip.SipAgentTransport
 import com.example.localcallagent.tts.local.LocalTts
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,6 +63,16 @@ class MainViewModel : ViewModel() {
         )
     )
     val sipConfig: StateFlow<SipAccountConfig> = _sipConfig.asStateFlow()
+
+    private val _registrationState = MutableStateFlow(RegistrationState.UNREGISTERED)
+    val registrationState: StateFlow<RegistrationState> = _registrationState.asStateFlow()
+
+    private val _sipStatusMessage = MutableStateFlow("Not registered — enter free SIP credentials and tap Register")
+    val sipStatusMessage: StateFlow<String> = _sipStatusMessage.asStateFlow()
+
+    /** Real SIP transport used when registerSip() succeeds. Null = demo/mock mode. */
+    private var sipTransport: SipAgentTransport? = null
+    private var registrationJob: Job? = null
 
     // Call Task Inputs
     val businessName = MutableStateFlow("Mike's Auto Care")
@@ -116,6 +128,48 @@ class MainViewModel : ViewModel() {
 
     fun updateSipConfig(config: SipAccountConfig) {
         _sipConfig.value = config
+    }
+
+    /**
+     * Register with the configured SIP provider (UDP).
+     * Credentials stay in memory only — never written to git or logs.
+     */
+    fun registerSip() {
+        registrationJob?.cancel()
+        registrationJob = viewModelScope.launch {
+            _registrationState.value = RegistrationState.REGISTERING
+            _sipStatusMessage.value = "Registering with ${_sipConfig.value.domain}…"
+            try {
+                val transport = sipTransport ?: SipAgentTransport().also { sipTransport = it }
+                transport.register(_sipConfig.value)
+                // Observe engine registration updates
+                launch {
+                    transport.registrationState.collect { state ->
+                        _registrationState.value = state
+                        _sipStatusMessage.value = when (state) {
+                            RegistrationState.UNREGISTERED -> "Unregistered"
+                            RegistrationState.REGISTERING -> "Registering…"
+                            RegistrationState.REGISTERED -> "Registered as ${_sipConfig.value.username}@${_sipConfig.value.domain}"
+                            RegistrationState.FAILED -> "Registration failed — check username/password/proxy/NAT"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _registrationState.value = RegistrationState.FAILED
+                _sipStatusMessage.value = "Registration error: ${e.message ?: e::class.java.simpleName}"
+            }
+        }
+    }
+
+    fun unregisterSip() {
+        viewModelScope.launch {
+            try {
+                sipTransport?.unregister()
+            } catch (_: Exception) {
+            }
+            _registrationState.value = RegistrationState.UNREGISTERED
+            _sipStatusMessage.value = "Unregistered"
+        }
     }
 
     fun startCall(onConnected: () -> Unit = {}) {
