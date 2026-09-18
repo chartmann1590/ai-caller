@@ -36,6 +36,7 @@ fun OnboardingScreen(
     var domain by remember { mutableStateOf(sipConfig.domain) }
     var port by remember { mutableStateOf(sipConfig.port.toString()) }
     var displayName by remember { mutableStateOf(sipConfig.displayName ?: "Alex") }
+    var outboundProxy by remember { mutableStateOf(sipConfig.outboundProxy ?: "") }
 
     Column(
         modifier = Modifier
@@ -187,6 +188,14 @@ fun OnboardingScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("VoIP / SIP Softphone Setup", fontWeight = FontWeight.SemiBold, color = DarkTextPrimary)
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Free SIP: sip2sip.info (outbound proxy proxy.sipthor.net), iptel.org, or Linphone (sip.linphone.org). " +
+                        "See docs/FREE_SIP_SETUP.md. Never commit real passwords.",
+                    fontSize = 11.sp,
+                    color = DarkTextSecondary,
+                    lineHeight = 15.sp
+                )
                 Spacer(modifier = Modifier.height(10.dp))
                 OutlinedTextField(
                     value = username,
@@ -232,6 +241,17 @@ fun OnboardingScreen(
             }
         }
 
+
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = outboundProxy,
+                    onValueChange = { outboundProxy = it },
+                    label = { Text("Outbound Proxy (optional)") },
+                    placeholder = { Text("e.g. proxy.sipthor.net or sip.iptel.org") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
         // Finish Onboarding Button
         Button(
             onClick = {
@@ -241,7 +261,8 @@ fun OnboardingScreen(
                         password = password,
                         domain = domain,
                         port = port.toIntOrNull() ?: 5060,
-                        displayName = displayName
+                        displayName = displayName,
+                        outboundProxy = outboundProxy.ifBlank { null }
                     )
                 )
                 onComplete()
