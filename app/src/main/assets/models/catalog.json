@@ -1,0 +1,25 @@
+{
+  "packages": [
+    {
+      "asset": "llm_pipeline_v1.bin",
+      "installName": "llm.litertlm",
+      "sha256": "a13eca4f1704a75fb79344dab92cb6e535a7f6a28e5cb13304b2354f4904a9cb",
+      "sizeBytes": 208,
+      "type": "LLM"
+    },
+    {
+      "asset": "asr_pipeline_v1.bin",
+      "installName": "asr.onnx",
+      "sha256": "317c995d0b937ffac34967868021322676b298c27d083ee9d1b90923ce398053",
+      "sizeBytes": 81,
+      "type": "ASR"
+    },
+    {
+      "asset": "tts_pipeline_v1.bin",
+      "installName": "tts.onnx",
+      "sha256": "a6ef6213a7b254e5b8ba3f3096e5b1fd81415bdfa39adec04532f62da56206ab",
+      "sizeBytes": 84,
+      "type": "TTS"
+    }
+  ]
+}
