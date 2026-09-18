@@ -103,6 +103,7 @@ adb install -r app/build/outputs/apk/sipAgent/debug/app-sipAgent-debug.apk
 
 ## Documentation
 
+- [Free SIP Setup (sip2sip / iptel / Linphone)](docs/FREE_SIP_SETUP.md)
 - [Android Cellular Audio Limitations](docs/ANDROID_CELLULAR_AUDIO_LIMITATION.md)
 - [Privacy Architecture & Security Model](docs/PRIVACY_MODEL.md)
 - [Threat Model & Security Architecture](docs/THREAT_MODEL.md)
