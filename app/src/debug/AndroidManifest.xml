@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug-only headless SIP e2e (merged into debug builds only). -->
+        <receiver
+            android:name="com.example.localcallagent.debug.SipDebugE2eReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.example.localcallagent.sip.DEBUG_SIP_E2E" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
