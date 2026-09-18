@@ -140,6 +140,22 @@ fun OnboardingScreen(
                 Text("• Local Streaming ASR: ${if (ms.asrReady) "Weights present" else "Not installed — no invented transcripts"}", fontSize = 12.sp, color = DarkTextSecondary)
                 Text("• Neural TTS: ${if (ms.ttsReady) "Weights present" else "Not installed — LocalStreamingNeuralTts synthesis"}", fontSize = 12.sp, color = DarkTextSecondary)
                 Text("• Status: ${ms.statusText}", fontSize = 12.sp, color = if (ms.isDownloaded) SafetyShieldGreen else WarningAmber)
+                Spacer(modifier = Modifier.height(10.dp))
+                LinearProgressIndicator(
+                    progress = { ms.progressPercent / 100f },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.downloadModels() },
+                    enabled = !ms.isDownloaded || ms.statusText.contains("fail", ignoreCase = true),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary)
+                ) {
+                    Text(
+                        if (ms.isDownloaded) "Models Ready" else "Download On-Device Models",
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
 
