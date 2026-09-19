@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
@@ -117,6 +118,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private var activeController: ConversationController? = null
     private var callTimerJob: Job? = null
+    private var callCollectorJobs: List<Job> = emptyList()
+
+    // Reused per-call pipeline instances (avoids native-resource leaks
+    // from reconstructing ASR/TTS/LLM on every startCall()).
+    private var cachedAsr: LocalTransducerAsr? = null
+    private var cachedAsrModel: File? = null
+    private var cachedTts: LocalStreamingNeuralTts? = null
+    private var cachedTtsModel: File? = null
+    private var cachedDialogueModel: LiteRtLmGemmaModel? = null
+    private var cachedLlmModel: File? = null
+    private var cachedLlmModelSet: Boolean = false
 
     init {
         runDeviceQualification()
@@ -348,12 +360,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w(TAG, "MODEL_MISSING_LLM using DeterministicFallbackModel")
             }
 
-            val asr = LocalTransducerAsr(modelFile = asrModel)
-            val tts = LocalStreamingNeuralTts(modelFile = ttsModel)
-            val dialogueModel = LiteRtLmGemmaModel(
-                modelFile = llmModel,
-                fallbackModel = DeterministicFallbackModel()
-            )
+            val asr = getOrCreateAsr(asrModel)
+            try { asr.reset() } catch (_: Exception) { }
+            val tts = getOrCreateTts(ttsModel)
+            try { tts.cancel() } catch (_: Exception) { }
+            val dialogueModel = getOrCreateDialogueModel(llmModel)
 
             val controller = ConversationController(
                 transport = liveTransport,
@@ -367,20 +378,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _callDurationSeconds.value = 0L
             _liveTranscript.value = emptyList()
 
-            launch { controller.agentState.collect { _agentState.value = it } }
-            launch { controller.liveTranscript.collect { _liveTranscript.value = it } }
-            launch { controller.latestResult.collect { _latestResult.value = it } }
+            // Track collector Jobs so they are cancelled with the call (no orphaned collectors).
+            callCollectorJobs.forEach { try { it.cancel() } catch (_: Exception) { } }
+            callCollectorJobs = listOf(
+                launch { controller.agentState.collect { _agentState.value = it } },
+                launch { controller.liveTranscript.collect { _liveTranscript.value = it } },
+                launch { controller.latestResult.collect { _latestResult.value = it } }
+            )
 
             controller.startCall(objective)
             onConnected()
 
             callTimerJob?.cancel()
             callTimerJob = launch {
-                while (true) {
+                while (isActive) {
                     delay(1000)
-                    if (_agentState.value != AgentState.COMPLETE && _agentState.value != AgentState.FAILED) {
-                        _callDurationSeconds.value += 1
-                    }
+                    val state = _agentState.value
+                    if (state == AgentState.COMPLETE || state == AgentState.FAILED) break
+                    _callDurationSeconds.value += 1
                 }
             }
             // Live SIP: ConversationController observes transport.state for Active / Disconnected
@@ -453,6 +468,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun getOrCreateAsr(modelFile: File?): LocalTransducerAsr {
+        val cached = cachedAsr
+        if (cached != null && cachedAsrModel == modelFile) return cached
+        val created = LocalTransducerAsr(modelFile = modelFile)
+        cachedAsr = created
+        cachedAsrModel = modelFile
+        return created
+    }
+
+    private fun getOrCreateTts(modelFile: File?): LocalStreamingNeuralTts {
+        val cached = cachedTts
+        if (cached != null && cachedTtsModel == modelFile) return cached
+        val created = LocalStreamingNeuralTts(modelFile = modelFile)
+        cachedTts = created
+        cachedTtsModel = modelFile
+        return created
+    }
+
+    private fun getOrCreateDialogueModel(modelFile: File?): LiteRtLmGemmaModel {
+        val cached = cachedDialogueModel
+        if (cached != null && cachedLlmModelSet && cachedLlmModel == modelFile) return cached
+        val created = LiteRtLmGemmaModel(
+            modelFile = modelFile,
+            fallbackModel = DeterministicFallbackModel()
+        )
+        cachedDialogueModel = created
+        cachedLlmModel = modelFile
+        cachedLlmModelSet = true
+        return created
+    }
+
     fun takeOver() {
         activeController?.takeOver()
     }
@@ -469,6 +515,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun endCall() {
         callTimerJob?.cancel()
+        callCollectorJobs.forEach { try { it.cancel() } catch (_: Exception) { } }
+        callCollectorJobs = emptyList()
         activeController?.endCall()
         _agentState.value = AgentState.COMPLETE
     }
