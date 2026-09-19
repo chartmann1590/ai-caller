@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.agent.orchestrator"
+    namespace = "com.charles.localcallagent.agent.orchestrator"
     compileSdk = 35
 
     defaultConfig {

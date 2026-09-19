@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.telephony.sip"
+    namespace = "com.charles.localcallagent.telephony.sip"
     compileSdk = 35
 
     defaultConfig {

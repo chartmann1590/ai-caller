@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.benchmark"
+    namespace = "com.charles.localcallagent.benchmark"
     compileSdk = 35
 
     defaultConfig {

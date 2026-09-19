@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.llm.litert"
+    namespace = "com.charles.localcallagent.llm.litert"
     compileSdk = 35
 
     defaultConfig {

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,17 +8,42 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent"
+    namespace = "com.charles.localcallagent"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.localcallagent"
+        applicationId = "com.charles.localcallagent"
         minSdk = 31
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Optional Gemma weight URL from local.properties (never commit secrets/binaries).
+        val localProps = Properties()
+        val localFile = rootProject.file("local.properties")
+        if (localFile.exists()) {
+            localFile.inputStream().use { localProps.load(it) }
+        }
+        val rawModelUrl: String = localProps.getProperty("model.download.base.url")
+            ?: (project.findProperty("model.download.base.url") as String?)
+            ?: ""
+        buildConfigField(
+            "String",
+            "MODEL_DOWNLOAD_BASE_URL",
+            "\"" + rawModelUrl.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        // Expected SHA-256 of the optional full Gemma download, so a compromised/mirrored
+        // host can't substitute the model that processes live call transcripts.
+        val rawModelSha: String = localProps.getProperty("model.download.sha256")
+            ?: (project.findProperty("model.download.sha256") as String?)
+            ?: ""
+        buildConfigField(
+            "String",
+            "MODEL_DOWNLOAD_SHA256",
+            "\"" + rawModelSha.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
     }
 
     flavorDimensions += "mode"
@@ -35,6 +62,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
