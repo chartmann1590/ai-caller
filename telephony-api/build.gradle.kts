@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.telephony.api"
+    namespace = "com.charles.localcallagent.telephony.api"
     compileSdk = 35
 
     defaultConfig {

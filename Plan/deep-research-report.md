@@ -577,11 +577,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent"
+    namespace = "com.charles.localcallagent"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.localcallagent"
+        applicationId = "com.charles.localcallagent"
         minSdk = 31
         targetSdk = 37
 

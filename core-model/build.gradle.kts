@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.core.model"
+    namespace = "com.charles.localcallagent.core.model"
     compileSdk = 35
 
     defaultConfig {

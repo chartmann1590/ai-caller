@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.asr.local"
+    namespace = "com.charles.localcallagent.asr.local"
     compileSdk = 35
 
     defaultConfig {

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.test.fixtures"
+    namespace = "com.charles.localcallagent.test.fixtures"
     compileSdk = 35
 
     defaultConfig {
@@ -17,6 +17,12 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // JVM unit tests exercise ConversationController which calls android.util.Log.
+    // Return defaults instead of throwing "not mocked".
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 

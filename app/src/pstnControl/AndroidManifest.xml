@@ -6,7 +6,7 @@
 
     <application>
         <service
-            android:name="com.example.localcallagent.telephony.pstn.LocalInCallService"
+            android:name="com.charles.localcallagent.telephony.pstn.LocalInCallService"
             android:permission="android.permission.BIND_INCALL_SERVICE"
             android:exported="true">
             <intent-filter>
@@ -18,7 +18,7 @@
         </service>
 
         <service
-            android:name="com.example.localcallagent.telephony.pstn.LocalCallScreeningService"
+            android:name="com.charles.localcallagent.telephony.pstn.LocalCallScreeningService"
             android:permission="android.permission.BIND_SCREENING_SERVICE"
             android:exported="true">
             <intent-filter>

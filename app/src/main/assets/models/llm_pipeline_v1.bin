@@ -1,0 +1,1 @@
+LCAMLLM1{"id":"llm-pipeline-v1","engine":"on_device_pipeline","note":"Emu-safe on-device dialogue package. Full Gemma 4 E2B via LiteRT-LM on NPU/GPU devices when gemma.tflite is installed.","version":"1.0.0"}
