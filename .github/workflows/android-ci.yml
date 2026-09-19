@@ -1,0 +1,30 @@
+name: android-ci
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [fix/sip-emulator-test]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Unit tests (SIP + fixtures)
+        run: ./gradlew :telephony-sip:test :test-fixtures:test --stacktrace
+      - name: Assemble sipAgent debug
+        run: ./gradlew :app:assembleSipAgentDebug --stacktrace
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/**'
