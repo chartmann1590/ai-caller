@@ -8,7 +8,9 @@ import com.example.localcallagent.telephony.api.RegistrationState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -58,6 +60,9 @@ class SipEngine(
     private var receiveJob: Job? = null
     private var rtpReceiveJob: Job? = null
     private var jitterBufferPumpJob: Job? = null
+    // Dedicated sender scope so blocking UDP sends never stall the socket
+    // reader coroutine (head-of-line blocking).
+    private val sendScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun initialize(config: SipAccountConfig) {
         activeConfig = config
@@ -297,7 +302,7 @@ class SipEngine(
             "Content-Length" to "0"
         )
         val ackUri = if (dialedUser != null) "sip:${dialedUser}@${config.domain}" else "sip:${config.domain}"
-        sendSip(SipMessage(isRequest = true, method = "ACK", requestUri = ackUri, headers = headers))
+        sendSipAsync(SipMessage(isRequest = true, method = "ACK", requestUri = ackUri, headers = headers))
     }
 
     private suspend fun sendResponse(req: SipMessage, code: Int, reason: String) {
@@ -308,7 +313,7 @@ class SipEngine(
         req.getHeader("Call-ID")?.let { headers["Call-ID"] = it }
         req.getHeader("CSeq")?.let { headers["CSeq"] = it }
         headers["Content-Length"] = "0"
-        sendSip(SipMessage(isRequest = false, statusCode = code, reasonPhrase = reason, headers = headers))
+        sendSipAsync(SipMessage(isRequest = false, statusCode = code, reasonPhrase = reason, headers = headers))
     }
 
     private suspend fun handleAuthChallenge(msg: SipMessage) {
@@ -347,7 +352,7 @@ class SipEngine(
         if (method == "INVITE" && body.isNotEmpty()) headers["Content-Type"] = "application/sdp"
         if (isProxy) headers["Proxy-Authorization"] = authVal else headers["Authorization"] = authVal
         if (!qop.isNullOrBlank()) { }
-        sendSip(SipMessage(isRequest = true, method = method, requestUri = requestUri, headers = headers, body = body))
+        sendSipAsync(SipMessage(isRequest = true, method = method, requestUri = requestUri, headers = headers, body = body))
     }
 
     private fun extractParameter(header: String, paramName: String): String? {
@@ -371,9 +376,18 @@ class SipEngine(
         val config = activeConfig ?: return
         val socket = sipSocket ?: return
         val targetHost = config.outboundProxy ?: config.domain
-        val addr = InetAddress.getByName(targetHost)
         val bytes = msg.toByteArray()
-        socket.send(DatagramPacket(bytes, bytes.size, addr, config.port))
+        // Resolve + send off the reader thread.
+        withContext(Dispatchers.IO) {
+            val addr = InetAddress.getByName(targetHost)
+            socket.send(DatagramPacket(bytes, bytes.size, addr, config.port))
+        }
+    }
+
+    private fun sendSipAsync(msg: SipMessage) {
+        sendScope.launch {
+            try { sendSip(msg) } catch (_: Exception) { }
+        }
     }
 
     private fun stopRtp() {
