@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.test.fixtures"
+    namespace = "com.charles.localcallagent.test.fixtures"
     compileSdk = 35
 
     defaultConfig {

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.core.privacy"
+    namespace = "com.charles.localcallagent.core.privacy"
     compileSdk = 35
 
     defaultConfig {

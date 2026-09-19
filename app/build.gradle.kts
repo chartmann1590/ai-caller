@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent"
+    namespace = "com.charles.localcallagent"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.localcallagent"
+        applicationId = "com.charles.localcallagent"
         minSdk = 31
         targetSdk = 35
         versionCode = 1
@@ -33,6 +33,16 @@ android {
             "String",
             "MODEL_DOWNLOAD_BASE_URL",
             "\"" + rawModelUrl.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        )
+        // Expected SHA-256 of the optional full Gemma download, so a compromised/mirrored
+        // host can't substitute the model that processes live call transcripts.
+        val rawModelSha: String = localProps.getProperty("model.download.sha256")
+            ?: (project.findProperty("model.download.sha256") as String?)
+            ?: ""
+        buildConfigField(
+            "String",
+            "MODEL_DOWNLOAD_SHA256",
+            "\"" + rawModelSha.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
         )
     }
 

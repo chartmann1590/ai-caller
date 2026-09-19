@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.tts.local"
+    namespace = "com.charles.localcallagent.tts.local"
     compileSdk = 35
 
     defaultConfig {

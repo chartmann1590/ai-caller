@@ -169,7 +169,7 @@ To strictly enforce privacy boundaries and prevent architectural confusion, the 
 
 For device manufacturers (OEMs), carrier system integrations, or rooted research devices where `CAPTURE_AUDIO_OUTPUT` is available, `telephony-api` defines:
 ```kotlin
-package com.example.localcallagent.telephony.api
+package com.charles.localcallagent.telephony.api
 
 interface PrivilegedCarrierMediaBridge {
     fun isCarrierMediaSupported(): Boolean
@@ -182,7 +182,7 @@ interface PrivilegedCarrierMediaBridge {
 2. Permissions allowlist in `/system/etc/permissions/privapp-permissions-localcallagent.xml`:
    ```xml
    <permissions>
-       <privapp-permissions package="com.example.localcallagent">
+       <privapp-permissions package="com.charles.localcallagent">
            <permission name="android.permission.CAPTURE_AUDIO_OUTPUT"/>
            <permission name="android.permission.MODIFY_PHONE_STATE"/>
            <permission name="android.permission.CONTROL_INCALL_EXPERIENCE"/>

@@ -7,7 +7,7 @@
 
     <application>
         <service
-            android:name="com.example.localcallagent.telephony.sip.AgentConnectionService"
+            android:name="com.charles.localcallagent.telephony.sip.AgentConnectionService"
             android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
             android:exported="true">
             <intent-filter>

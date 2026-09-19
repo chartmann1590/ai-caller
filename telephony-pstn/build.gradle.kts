@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localcallagent.telephony.pstn"
+    namespace = "com.charles.localcallagent.telephony.pstn"
     compileSdk = 35
 
     defaultConfig {
