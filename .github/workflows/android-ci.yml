@@ -23,10 +23,13 @@ jobs:
       - name: Unit tests (SIP + fixtures)
         run: ./gradlew :telephony-sip:test :test-fixtures:test --stacktrace
       - name: Assemble sipAgent debug
+        if: success() || failure()
         run: ./gradlew :app:assembleSipAgentDebug --stacktrace
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: '**/build/reports/tests/**'
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**/*.xml
