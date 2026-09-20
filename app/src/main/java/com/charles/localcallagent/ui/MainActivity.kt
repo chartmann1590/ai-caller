@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -33,7 +34,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LocalCallAgentTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    // Every screen renders inside this Surface via Crossfade, so applying
+                    // safeDrawingPadding() once here keeps content clear of the status bar
+                    // and nav bar everywhere instead of patching each screen individually.
+                    modifier = Modifier.fillMaxSize().safeDrawingPadding(),
                     color = DarkBackground
                 ) {
                     var currentScreen by remember { mutableStateOf(Screen.ONBOARDING) }
