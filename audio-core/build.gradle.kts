@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.charles.localcallagent.audio.core"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 31
