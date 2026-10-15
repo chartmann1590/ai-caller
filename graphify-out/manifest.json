@@ -1,0 +1,620 @@
+{
+  ".claude/.headroom_wrap_marker.json": {
+    "mtime": 1789834548.5006888,
+    "seen": 1789837138.286164,
+    "ast_hash": "cba09518c210e37558bca82b8e04f76c",
+    "semantic_hash": "cba09518c210e37558bca82b8e04f76c"
+  },
+  ".claude/.headroom_wrap_owners.json": {
+    "mtime": 1789834549.0716546,
+    "seen": 1789837138.2861745,
+    "ast_hash": "6a832fb7a3cfb4e3c289434189ef95d0",
+    "semantic_hash": "6a832fb7a3cfb4e3c289434189ef95d0"
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1789834549.2746978,
+    "seen": 1789837138.2861776,
+    "ast_hash": "693bd17f7335f7d1e9fa0335a44051e3",
+    "semantic_hash": "693bd17f7335f7d1e9fa0335a44051e3"
+  },
+  "agent-orchestrator/build.gradle.kts": {
+    "mtime": 1789601975.024536,
+    "seen": 1789837138.2861798,
+    "ast_hash": "c372668ec44c3d67f197253ada72586f",
+    "semantic_hash": "c372668ec44c3d67f197253ada72586f"
+  },
+  "agent-orchestrator/src/main/java/com/example/localcallagent/agent/orchestrator/AgentState.kt": {
+    "mtime": 1789601984.4168975,
+    "seen": 1789837138.2861824,
+    "ast_hash": "503c86fa91af1a621eb12447f3f7b3d5",
+    "semantic_hash": "503c86fa91af1a621eb12447f3f7b3d5"
+  },
+  "agent-orchestrator/src/main/java/com/example/localcallagent/agent/orchestrator/ConversationController.kt": {
+    "mtime": 1789604084.902423,
+    "seen": 1789837138.2861845,
+    "ast_hash": "14480a4167491234e7899bf2d2404144",
+    "semantic_hash": "14480a4167491234e7899bf2d2404144"
+  },
+  "agent-orchestrator/src/main/java/com/example/localcallagent/agent/orchestrator/SafetyValidator.kt": {
+    "mtime": 1789601989.4786735,
+    "seen": 1789837138.2861865,
+    "ast_hash": "0425db68daa66fef0304c1ce66c54563",
+    "semantic_hash": "0425db68daa66fef0304c1ce66c54563"
+  },
+  "agent-orchestrator/src/test/java/com/example/localcallagent/agent/orchestrator/AgentOrchestratorTest.kt": {
+    "mtime": 1789602279.7250426,
+    "seen": 1789837138.2861884,
+    "ast_hash": "8b0ce8b1140907226461c75e508449fe",
+    "semantic_hash": "8b0ce8b1140907226461c75e508449fe"
+  },
+  "app/build.gradle.kts": {
+    "mtime": 1789617846.411889,
+    "seen": 1789837138.2861898,
+    "ast_hash": "345ea7c59df21380d5d09cb46127756e",
+    "semantic_hash": "345ea7c59df21380d5d09cb46127756e"
+  },
+  "app/src/androidTest/java/com/example/localcallagent/OnDevicePrivacyAndCallTest.kt": {
+    "mtime": 1789609284.2907085,
+    "seen": 1789837138.286191,
+    "ast_hash": "2aae1a174cb3aa22ac4b49b844861a67",
+    "semantic_hash": "2aae1a174cb3aa22ac4b49b844861a67"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/MainActivity.kt": {
+    "mtime": 1789603378.7231872,
+    "seen": 1789837138.2861927,
+    "ast_hash": "b71e7a275271b63125800d5ef3f22801",
+    "semantic_hash": "b71e7a275271b63125800d5ef3f22801"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/MainViewModel.kt": {
+    "mtime": 1789604129.4584224,
+    "seen": 1789837138.2861953,
+    "ast_hash": "5745d54bb5abca09c35716a17de2ca99",
+    "semantic_hash": "5745d54bb5abca09c35716a17de2ca99"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/navigation/Screen.kt": {
+    "mtime": 1789603327.124265,
+    "seen": 1789837138.2861965,
+    "ast_hash": "7b67cabc4bd8574b50f38f68835f4100",
+    "semantic_hash": "7b67cabc4bd8574b50f38f68835f4100"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/screens/LiveCallScreen.kt": {
+    "mtime": 1789604162.1466193,
+    "seen": 1789837138.286198,
+    "ast_hash": "7dcf57c5b31a414f7c86ea8205056cb9",
+    "semantic_hash": "7dcf57c5b31a414f7c86ea8205056cb9"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/screens/OnboardingScreen.kt": {
+    "mtime": 1789604150.671935,
+    "seen": 1789837138.2861996,
+    "ast_hash": "bc6c8b3fac2841ae348ea99d5153d74f",
+    "semantic_hash": "bc6c8b3fac2841ae348ea99d5153d74f"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/screens/ResultSummaryScreen.kt": {
+    "mtime": 1789604169.6650407,
+    "seen": 1789837138.286201,
+    "ast_hash": "50dd665218ffb755bf903b9ecee2f05d",
+    "semantic_hash": "50dd665218ffb755bf903b9ecee2f05d"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/screens/SettingsScreen.kt": {
+    "mtime": 1789603375.8382142,
+    "seen": 1789837138.286203,
+    "ast_hash": "1a7d715606dc1d436f3fc0f0877ac5c1",
+    "semantic_hash": "1a7d715606dc1d436f3fc0f0877ac5c1"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/screens/TaskCreationScreen.kt": {
+    "mtime": 1789603356.701325,
+    "seen": 1789837138.286204,
+    "ast_hash": "0fba4a651af17448e91bfdc3047002c0",
+    "semantic_hash": "0fba4a651af17448e91bfdc3047002c0"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/theme/Color.kt": {
+    "mtime": 1789603322.134424,
+    "seen": 1789837138.286206,
+    "ast_hash": "38f40954963d613a1d0eb97ec76596aa",
+    "semantic_hash": "38f40954963d613a1d0eb97ec76596aa"
+  },
+  "app/src/main/java/com/example/localcallagent/ui/theme/Theme.kt": {
+    "mtime": 1789603324.911916,
+    "seen": 1789837138.2862074,
+    "ast_hash": "c8ba8cd0b39caa2567ba07a3cb0e8f23",
+    "semantic_hash": "c8ba8cd0b39caa2567ba07a3cb0e8f23"
+  },
+  "asr-local/build.gradle.kts": {
+    "mtime": 1789601748.3172212,
+    "seen": 1789837138.2862096,
+    "ast_hash": "d984f19ea2adb90a46ecb74a1a68abe2",
+    "semantic_hash": "d984f19ea2adb90a46ecb74a1a68abe2"
+  },
+  "asr-local/src/main/java/com/example/localcallagent/asr/local/CriticalSlotValidator.kt": {
+    "mtime": 1789601337.573053,
+    "seen": 1789837138.2862108,
+    "ast_hash": "f3553b374e49cfc8960c0fa89dafe2df",
+    "semantic_hash": "f3553b374e49cfc8960c0fa89dafe2df"
+  },
+  "asr-local/src/main/java/com/example/localcallagent/asr/local/LocalTransducerAsr.kt": {
+    "mtime": 1789601341.6238174,
+    "seen": 1789837138.2862139,
+    "ast_hash": "748a3e2f1741cbe5396091b45f344b08",
+    "semantic_hash": "748a3e2f1741cbe5396091b45f344b08"
+  },
+  "asr-local/src/main/java/com/example/localcallagent/asr/local/RuleSlotExtractor.kt": {
+    "mtime": 1789601334.9206839,
+    "seen": 1789837138.2862153,
+    "ast_hash": "e3834299878043578bcc8f373eb7d579",
+    "semantic_hash": "e3834299878043578bcc8f373eb7d579"
+  },
+  "asr-local/src/main/java/com/example/localcallagent/asr/local/StreamingAsr.kt": {
+    "mtime": 1789601330.8489437,
+    "seen": 1789837138.2862167,
+    "ast_hash": "60a7b8c81734713f57aba4a5ea19f15e",
+    "semantic_hash": "60a7b8c81734713f57aba4a5ea19f15e"
+  },
+  "asr-local/src/test/java/com/example/localcallagent/asr/local/AsrLocalTest.kt": {
+    "mtime": 1789601343.9269457,
+    "seen": 1789837138.2862182,
+    "ast_hash": "5c2c6b271e192b07d76d81ed9f49fa68",
+    "semantic_hash": "5c2c6b271e192b07d76d81ed9f49fa68"
+  },
+  "audio-core/build.gradle.kts": {
+    "mtime": 1789601744.1751342,
+    "seen": 1789837138.2862198,
+    "ast_hash": "fb698a933dfdf76cc29f3cde773938a9",
+    "semantic_hash": "fb698a933dfdf76cc29f3cde773938a9"
+  },
+  "audio-core/src/main/java/com/example/localcallagent/audio/core/AudioRouter.kt": {
+    "mtime": 1789601213.3527172,
+    "seen": 1789837138.2862213,
+    "ast_hash": "ea1295962ff907b3ed96fdb026da6cb0",
+    "semantic_hash": "ea1295962ff907b3ed96fdb026da6cb0"
+  },
+  "audio-core/src/main/java/com/example/localcallagent/audio/core/BoundedAudioQueue.kt": {
+    "mtime": 1789601211.0456047,
+    "seen": 1789837138.2862227,
+    "ast_hash": "3e8ca71c0a909ce86437f4c0b330f6ea",
+    "semantic_hash": "3e8ca71c0a909ce86437f4c0b330f6ea"
+  },
+  "audio-core/src/main/java/com/example/localcallagent/audio/core/PcmResampler.kt": {
+    "mtime": 1789601205.3018363,
+    "seen": 1789837138.286224,
+    "ast_hash": "c9f4339902c66af89b9065bfa7fbb73e",
+    "semantic_hash": "c9f4339902c66af89b9065bfa7fbb73e"
+  },
+  "audio-core/src/main/java/com/example/localcallagent/audio/core/VadDetector.kt": {
+    "mtime": 1789601208.6219056,
+    "seen": 1789837138.2862253,
+    "ast_hash": "e4408adcaceb50bbd1c875aebae7d188",
+    "semantic_hash": "e4408adcaceb50bbd1c875aebae7d188"
+  },
+  "audio-core/src/test/java/com/example/localcallagent/audio/core/AudioCoreTest.kt": {
+    "mtime": 1789601217.3013914,
+    "seen": 1789837138.2862267,
+    "ast_hash": "1896c5f4532cec4ade49c94855c7cd45",
+    "semantic_hash": "1896c5f4532cec4ade49c94855c7cd45"
+  },
+  "benchmark/build.gradle.kts": {
+    "mtime": 1789602383.4895167,
+    "seen": 1789837138.2862284,
+    "ast_hash": "bb382762809309b357fc79831061bd3d",
+    "semantic_hash": "bb382762809309b357fc79831061bd3d"
+  },
+  "benchmark/src/main/java/com/example/localcallagent/benchmark/BenchmarkReport.kt": {
+    "mtime": 1789602395.6148286,
+    "seen": 1789837138.2862298,
+    "ast_hash": "0d30990b81b86332c187ef6c119f5057",
+    "semantic_hash": "0d30990b81b86332c187ef6c119f5057"
+  },
+  "benchmark/src/main/java/com/example/localcallagent/benchmark/BenchmarkRunner.kt": {
+    "mtime": 1789602400.9382255,
+    "seen": 1789837138.2862313,
+    "ast_hash": "321f777e9ea651dbaa9efda27019c5b5",
+    "semantic_hash": "321f777e9ea651dbaa9efda27019c5b5"
+  },
+  "benchmark/src/main/java/com/example/localcallagent/benchmark/DeviceCapabilityRepository.kt": {
+    "mtime": 1789602391.9243708,
+    "seen": 1789837138.2862334,
+    "ast_hash": "a82c63f9eb53576e167e7419853b67b4",
+    "semantic_hash": "a82c63f9eb53576e167e7419853b67b4"
+  },
+  "benchmark/src/test/java/com/example/localcallagent/benchmark/BenchmarkTest.kt": {
+    "mtime": 1789602404.8144536,
+    "seen": 1789837138.2862349,
+    "ast_hash": "3feed1353dfb6aa2b8dac753d94fb407",
+    "semantic_hash": "3feed1353dfb6aa2b8dac753d94fb407"
+  },
+  "build.gradle.kts": {
+    "mtime": 1789601721.722803,
+    "seen": 1789837138.2862365,
+    "ast_hash": "025f7e8748ef67de4515e574cbb88aca",
+    "semantic_hash": "025f7e8748ef67de4515e574cbb88aca"
+  },
+  "core-model/build.gradle.kts": {
+    "mtime": 1789601728.4068396,
+    "seen": 1789837138.2862377,
+    "ast_hash": "73efab4fbde0bdc4dd0b15bdbfac0806",
+    "semantic_hash": "73efab4fbde0bdc4dd0b15bdbfac0806"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/AgentDecision.kt": {
+    "mtime": 1789600263.7261243,
+    "seen": 1789837138.286239,
+    "ast_hash": "bce0a1f15c3f93f30c08d920c34533fa",
+    "semantic_hash": "bce0a1f15c3f93f30c08d920c34533fa"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/AppCallState.kt": {
+    "mtime": 1789600261.8153963,
+    "seen": 1789837138.2862408,
+    "ast_hash": "f1d9579e7eadf0cff9a821327b4b2e57",
+    "semantic_hash": "f1d9579e7eadf0cff9a821327b4b2e57"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/CallObjective.kt": {
+    "mtime": 1789600265.9354002,
+    "seen": 1789837138.2862425,
+    "ast_hash": "7ff4a22dd7bb2161be38059a6fcbae29",
+    "semantic_hash": "7ff4a22dd7bb2161be38059a6fcbae29"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/DeviceCapabilities.kt": {
+    "mtime": 1789600270.55029,
+    "seen": 1789837138.2862442,
+    "ast_hash": "eeaa0897e68008dc23332588ace06301",
+    "semantic_hash": "eeaa0897e68008dc23332588ace06301"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/DialogueContext.kt": {
+    "mtime": 1789600275.6947238,
+    "seen": 1789837138.2862475,
+    "ast_hash": "0b57439828987a6e8de7ae470a594f9f",
+    "semantic_hash": "0b57439828987a6e8de7ae470a594f9f"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/LocalModelDescriptor.kt": {
+    "mtime": 1789600273.8739252,
+    "seen": 1789837138.2862494,
+    "ast_hash": "cc091defe03646d79d497482aa62c18c",
+    "semantic_hash": "cc091defe03646d79d497482aa62c18c"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/PcmFrame.kt": {
+    "mtime": 1789600259.8361022,
+    "seen": 1789837138.286251,
+    "ast_hash": "3fac55592e7d1048a2d6fa3f63d18f90",
+    "semantic_hash": "3fac55592e7d1048a2d6fa3f63d18f90"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/SipAccountConfig.kt": {
+    "mtime": 1789600272.2996824,
+    "seen": 1789837138.2862523,
+    "ast_hash": "fa45131922143bd54d55a392afb74279",
+    "semantic_hash": "fa45131922143bd54d55a392afb74279"
+  },
+  "core-model/src/main/java/com/example/localcallagent/core/model/StructuredCallResult.kt": {
+    "mtime": 1789600267.5412722,
+    "seen": 1789837138.286254,
+    "ast_hash": "d3ae51e7d31d10a8b7e59676b2e1e5d8",
+    "semantic_hash": "d3ae51e7d31d10a8b7e59676b2e1e5d8"
+  },
+  "core-model/src/test/java/com/example/localcallagent/core/model/CoreModelTest.kt": {
+    "mtime": 1789600280.1622744,
+    "seen": 1789837138.2862554,
+    "ast_hash": "863fc341ff914b219f4cb0862844b5c5",
+    "semantic_hash": "863fc341ff914b219f4cb0862844b5c5"
+  },
+  "core-privacy/build.gradle.kts": {
+    "mtime": 1789601730.4916139,
+    "seen": 1789837138.2862577,
+    "ast_hash": "aa1d0b70f4bfdc88fe03970c4ce5d45d",
+    "semantic_hash": "aa1d0b70f4bfdc88fe03970c4ce5d45d"
+  },
+  "core-privacy/src/main/java/com/example/localcallagent/core/privacy/EncryptedTranscriptStore.kt": {
+    "mtime": 1789600496.110413,
+    "seen": 1789837138.2862597,
+    "ast_hash": "431cc9d063a228eaf119527497b63057",
+    "semantic_hash": "431cc9d063a228eaf119527497b63057"
+  },
+  "core-privacy/src/main/java/com/example/localcallagent/core/privacy/NetworkPolicyEnforcer.kt": {
+    "mtime": 1789600492.2322204,
+    "seen": 1789837138.286261,
+    "ast_hash": "ec0e635c0a67bd1ff5b6ca4428a3c354",
+    "semantic_hash": "ec0e635c0a67bd1ff5b6ca4428a3c354"
+  },
+  "core-privacy/src/main/java/com/example/localcallagent/core/privacy/PrivacyAudit.kt": {
+    "mtime": 1789600489.2199717,
+    "seen": 1789837138.2862625,
+    "ast_hash": "5bde2d1a30b703cee078c0609bfe96ec",
+    "semantic_hash": "5bde2d1a30b703cee078c0609bfe96ec"
+  },
+  "core-privacy/src/main/java/com/example/localcallagent/core/privacy/Redactor.kt": {
+    "mtime": 1789609279.7352428,
+    "seen": 1789837138.2862637,
+    "ast_hash": "220365a20b26c7090672e1f3000d0c06",
+    "semantic_hash": "220365a20b26c7090672e1f3000d0c06"
+  },
+  "core-privacy/src/test/java/com/example/localcallagent/core/privacy/CorePrivacyTest.kt": {
+    "mtime": 1789600499.4816592,
+    "seen": 1789837138.2862651,
+    "ast_hash": "f558e3ea09b43e7bf5d444c2671a9dcd",
+    "semantic_hash": "f558e3ea09b43e7bf5d444c2671a9dcd"
+  },
+  "gradlew": {
+    "mtime": 1789600184.2172313,
+    "seen": 1789837138.2862668,
+    "ast_hash": "1db6d150e9a9442ca929c1fa8b2fd25e",
+    "semantic_hash": "1db6d150e9a9442ca929c1fa8b2fd25e"
+  },
+  "llm-litert/build.gradle.kts": {
+    "mtime": 1789601754.2387433,
+    "seen": 1789837138.2862685,
+    "ast_hash": "24824bd41284f9727221e62e46f54878",
+    "semantic_hash": "24824bd41284f9727221e62e46f54878"
+  },
+  "llm-litert/src/main/java/com/example/localcallagent/llm/litert/DeterministicFallbackModel.kt": {
+    "mtime": 1789603296.4391584,
+    "seen": 1789837138.28627,
+    "ast_hash": "c8e3e9847ccb5e0e211a695c4dde869a",
+    "semantic_hash": "c8e3e9847ccb5e0e211a695c4dde869a"
+  },
+  "llm-litert/src/main/java/com/example/localcallagent/llm/litert/LiteRtLmGemmaModel.kt": {
+    "mtime": 1789601562.4518049,
+    "seen": 1789837138.2862716,
+    "ast_hash": "781faeca57692f4fb6788697d0a51562",
+    "semantic_hash": "781faeca57692f4fb6788697d0a51562"
+  },
+  "llm-litert/src/main/java/com/example/localcallagent/llm/litert/LocalDialogueModel.kt": {
+    "mtime": 1789601551.2735593,
+    "seen": 1789837138.286273,
+    "ast_hash": "a06730b04de4a7c7d3d1690274b23b64",
+    "semantic_hash": "a06730b04de4a7c7d3d1690274b23b64"
+  },
+  "llm-litert/src/test/java/com/example/localcallagent/llm/litert/LlmLocalTest.kt": {
+    "mtime": 1789601565.304808,
+    "seen": 1789837138.2862742,
+    "ast_hash": "fe8ddf84c600beeb39ddeed697c634ee",
+    "semantic_hash": "fe8ddf84c600beeb39ddeed697c634ee"
+  },
+  "settings.gradle.kts": {
+    "mtime": 1789600248.0262542,
+    "seen": 1789837138.2862759,
+    "ast_hash": "6a41c096cd875e83cb5d7ebaa08d8682",
+    "semantic_hash": "6a41c096cd875e83cb5d7ebaa08d8682"
+  },
+  "telephony-api/build.gradle.kts": {
+    "mtime": 1789601732.24884,
+    "seen": 1789837138.2862773,
+    "ast_hash": "b23bdc9956cdb244cdf968b6cacde37a",
+    "semantic_hash": "b23bdc9956cdb244cdf968b6cacde37a"
+  },
+  "telephony-api/src/main/java/com/example/localcallagent/telephony/api/CallTransport.kt": {
+    "mtime": 1789600743.3906882,
+    "seen": 1789837138.2862794,
+    "ast_hash": "930f775dfab7ecc99d4ba0a84813e400",
+    "semantic_hash": "930f775dfab7ecc99d4ba0a84813e400"
+  },
+  "telephony-api/src/main/java/com/example/localcallagent/telephony/api/CallTransportType.kt": {
+    "mtime": 1789600749.581344,
+    "seen": 1789837138.286281,
+    "ast_hash": "e21bb4a548b14f2631ae6be55139e8bf",
+    "semantic_hash": "e21bb4a548b14f2631ae6be55139e8bf"
+  },
+  "telephony-api/src/main/java/com/example/localcallagent/telephony/api/PrivilegedCarrierMediaBridge.kt": {
+    "mtime": 1789600748.044392,
+    "seen": 1789837138.2862825,
+    "ast_hash": "e8bd10775a06a7a46aab1cdce39b3df0",
+    "semantic_hash": "e8bd10775a06a7a46aab1cdce39b3df0"
+  },
+  "telephony-api/src/main/java/com/example/localcallagent/telephony/api/VoipClient.kt": {
+    "mtime": 1789600745.9961545,
+    "seen": 1789837138.286284,
+    "ast_hash": "299cb255f5b41a3d01777cc466b309be",
+    "semantic_hash": "299cb255f5b41a3d01777cc466b309be"
+  },
+  "telephony-pstn/build.gradle.kts": {
+    "mtime": 1789601736.6719067,
+    "seen": 1789837138.2862856,
+    "ast_hash": "00446ee1b2ec7c9050b0e692bdd64b82",
+    "semantic_hash": "00446ee1b2ec7c9050b0e692bdd64b82"
+  },
+  "telephony-pstn/src/main/java/com/example/localcallagent/telephony/pstn/DialerRoleManager.kt": {
+    "mtime": 1789600872.0815923,
+    "seen": 1789837138.286287,
+    "ast_hash": "1266b0e2dedaece1aebb89417be2f055",
+    "semantic_hash": "1266b0e2dedaece1aebb89417be2f055"
+  },
+  "telephony-pstn/src/main/java/com/example/localcallagent/telephony/pstn/LocalCallScreeningService.kt": {
+    "mtime": 1789600767.3895726,
+    "seen": 1789837138.2862885,
+    "ast_hash": "ba16a5230d6affbcc58d8858218230fa",
+    "semantic_hash": "ba16a5230d6affbcc58d8858218230fa"
+  },
+  "telephony-pstn/src/main/java/com/example/localcallagent/telephony/pstn/LocalInCallService.kt": {
+    "mtime": 1789600765.6241553,
+    "seen": 1789837138.28629,
+    "ast_hash": "60e8116767d41a0738d874382264b948",
+    "semantic_hash": "60e8116767d41a0738d874382264b948"
+  },
+  "telephony-pstn/src/main/java/com/example/localcallagent/telephony/pstn/PstnCallController.kt": {
+    "mtime": 1789600760.0862992,
+    "seen": 1789837138.2862914,
+    "ast_hash": "5f204a02dd3283690c178c4c06e5f276",
+    "semantic_hash": "5f204a02dd3283690c178c4c06e5f276"
+  },
+  "telephony-pstn/src/main/java/com/example/localcallagent/telephony/pstn/PstnControlTransport.kt": {
+    "mtime": 1789600771.6478941,
+    "seen": 1789837138.286293,
+    "ast_hash": "4b6c5bf20db3db61cc10c6e246211374",
+    "semantic_hash": "4b6c5bf20db3db61cc10c6e246211374"
+  },
+  "telephony-pstn/src/test/java/com/example/localcallagent/telephony/pstn/PstnControlTransportTest.kt": {
+    "mtime": 1789600774.51518,
+    "seen": 1789837138.2862942,
+    "ast_hash": "13310d8f90e7827723dd717902262d3e",
+    "semantic_hash": "13310d8f90e7827723dd717902262d3e"
+  },
+  "telephony-sip/build.gradle.kts": {
+    "mtime": 1789601740.3908262,
+    "seen": 1789837138.2862957,
+    "ast_hash": "ff9103071bbf894c47499d4faf94c88b",
+    "semantic_hash": "ff9103071bbf894c47499d4faf94c88b"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/AgentConnectionService.kt": {
+    "mtime": 1789601013.6803164,
+    "seen": 1789837138.2862968,
+    "ast_hash": "2b762ee6e9eadda110c7a2eea725fd0c",
+    "semantic_hash": "2b762ee6e9eadda110c7a2eea725fd0c"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/G711Codec.kt": {
+    "mtime": 1789601138.9509616,
+    "seen": 1789837138.2862985,
+    "ast_hash": "b12ce80c2b4792498644a18ea24b45c5",
+    "semantic_hash": "b12ce80c2b4792498644a18ea24b45c5"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/JitterBuffer.kt": {
+    "mtime": 1789600992.728288,
+    "seen": 1789837138.2863002,
+    "ast_hash": "d3e9b3e9da5ff53e97ec28d2addbed29",
+    "semantic_hash": "d3e9b3e9da5ff53e97ec28d2addbed29"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/Rfc2833Dtmf.kt": {
+    "mtime": 1789600989.4842453,
+    "seen": 1789837138.2863016,
+    "ast_hash": "5d9a3e3a9f347518f0f498dcd395e041",
+    "semantic_hash": "5d9a3e3a9f347518f0f498dcd395e041"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/RtpPacket.kt": {
+    "mtime": 1789600986.5750942,
+    "seen": 1789837138.2863033,
+    "ast_hash": "ecddd851710ffb9e169556ec91d869dc",
+    "semantic_hash": "ecddd851710ffb9e169556ec91d869dc"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/SipAgentTransport.kt": {
+    "mtime": 1789601018.0743437,
+    "seen": 1789837138.2863045,
+    "ast_hash": "8e6bfbd9d4a98e1f9492f6988fa0e90d",
+    "semantic_hash": "8e6bfbd9d4a98e1f9492f6988fa0e90d"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/SipEngine.kt": {
+    "mtime": 1789601009.7012427,
+    "seen": 1789837138.2863064,
+    "ast_hash": "add33b66d42313cf421f9dfc34e9a1ce",
+    "semantic_hash": "add33b66d42313cf421f9dfc34e9a1ce"
+  },
+  "telephony-sip/src/main/java/com/example/localcallagent/telephony/sip/SipMessage.kt": {
+    "mtime": 1789600998.0284476,
+    "seen": 1789837138.2863083,
+    "ast_hash": "5b4f0546fd67f15a8e212524731221b2",
+    "semantic_hash": "5b4f0546fd67f15a8e212524731221b2"
+  },
+  "telephony-sip/src/test/java/com/example/localcallagent/telephony/sip/TelephonySipTest.kt": {
+    "mtime": 1789601023.684575,
+    "seen": 1789837138.28631,
+    "ast_hash": "c2fde6fb5325e00035902940f3f5d531",
+    "semantic_hash": "c2fde6fb5325e00035902940f3f5d531"
+  },
+  "test-fixtures/build.gradle.kts": {
+    "mtime": 1789602554.3377895,
+    "seen": 1789837138.286312,
+    "ast_hash": "115ce0e6f937784495a16c61b150d72b",
+    "semantic_hash": "115ce0e6f937784495a16c61b150d72b"
+  },
+  "test-fixtures/src/main/java/com/example/localcallagent/test/fixtures/ConversationEvaluator.kt": {
+    "mtime": 1789603124.630874,
+    "seen": 1789837138.2863142,
+    "ast_hash": "e36e938fc8bf13c65c0932c80c6be084",
+    "semantic_hash": "e36e938fc8bf13c65c0932c80c6be084"
+  },
+  "test-fixtures/src/main/java/com/example/localcallagent/test/fixtures/ScenarioGenerator.kt": {
+    "mtime": 1789602570.5276942,
+    "seen": 1789837138.286318,
+    "ast_hash": "4f2c90dfbb5782a9f7da663e857be4ed",
+    "semantic_hash": "4f2c90dfbb5782a9f7da663e857be4ed"
+  },
+  "test-fixtures/src/main/java/com/example/localcallagent/test/fixtures/ScriptedScenario.kt": {
+    "mtime": 1789602562.555514,
+    "seen": 1789837138.2863202,
+    "ast_hash": "b6584b75cf9018fb131846877442fc21",
+    "semantic_hash": "b6584b75cf9018fb131846877442fc21"
+  },
+  "test-fixtures/src/test/java/com/example/localcallagent/test/fixtures/ConversationEvaluationTestSuite.kt": {
+    "mtime": 1789602577.9738722,
+    "seen": 1789837138.2863216,
+    "ast_hash": "bbb7dfed561cef88b5cd11c9f8194d8d",
+    "semantic_hash": "bbb7dfed561cef88b5cd11c9f8194d8d"
+  },
+  "tts-local/build.gradle.kts": {
+    "mtime": 1789601751.2114546,
+    "seen": 1789837138.2863233,
+    "ast_hash": "c5e3738d3f018b81ebf5ea5dc0112a56",
+    "semantic_hash": "c5e3738d3f018b81ebf5ea5dc0112a56"
+  },
+  "tts-local/src/main/java/com/example/localcallagent/tts/local/LocalStreamingNeuralTts.kt": {
+    "mtime": 1789601446.1881902,
+    "seen": 1789837138.2863247,
+    "ast_hash": "0e288a7afd4ebb3861c9a4f2295436dc",
+    "semantic_hash": "0e288a7afd4ebb3861c9a4f2295436dc"
+  },
+  "tts-local/src/main/java/com/example/localcallagent/tts/local/LocalTts.kt": {
+    "mtime": 1789601442.7472048,
+    "seen": 1789837138.2863262,
+    "ast_hash": "2b4f6c78e0d596792819688b2adfbc0b",
+    "semantic_hash": "2b4f6c78e0d596792819688b2adfbc0b"
+  },
+  "tts-local/src/test/java/com/example/localcallagent/tts/local/TtsLocalTest.kt": {
+    "mtime": 1789601448.4290376,
+    "seen": 1789837138.2863283,
+    "ast_hash": "f1052dc9382256f7af2073068c91c73d",
+    "semantic_hash": "f1052dc9382256f7af2073068c91c73d"
+  },
+  ".serena/project.yml": {
+    "mtime": 1789834582.6979747,
+    "seen": 1789837138.2863297,
+    "ast_hash": "bb606a87687af7fac34fa5625289628d",
+    "semantic_hash": "bb606a87687af7fac34fa5625289628d"
+  },
+  "Plan/Main-Plan.txt": {
+    "mtime": 1789600000.1333103,
+    "seen": 1789837138.2863314,
+    "ast_hash": "9af72b767f416f1507fb19ccc9b4d1b0",
+    "semantic_hash": "9af72b767f416f1507fb19ccc9b4d1b0"
+  },
+  "Plan/deep-research-report.md": {
+    "mtime": 1789599739.8362384,
+    "seen": 1789837138.286333,
+    "ast_hash": "557a1a1ec33520063d925ef20120fc88",
+    "semantic_hash": "557a1a1ec33520063d925ef20120fc88"
+  },
+  "README.md": {
+    "mtime": 1789603197.1751423,
+    "seen": 1789837138.2863348,
+    "ast_hash": "e8fd460168f308016c8a192eb4650b22",
+    "semantic_hash": "e8fd460168f308016c8a192eb4650b22"
+  },
+  "docs/ANDROID_CELLULAR_AUDIO_LIMITATION.md": {
+    "mtime": 1789603077.9341989,
+    "seen": 1789837138.286336,
+    "ast_hash": "9d3caa9fcea7d2b5f52518966195e047",
+    "semantic_hash": "9d3caa9fcea7d2b5f52518966195e047"
+  },
+  "docs/DEVICE_SUPPORT.md": {
+    "mtime": 1789603164.854176,
+    "seen": 1789837138.2863379,
+    "ast_hash": "d21637da425397d5251aa3346b97852b",
+    "semantic_hash": "d21637da425397d5251aa3346b97852b"
+  },
+  "docs/LEGAL_REVIEW_CHECKLIST.md": {
+    "mtime": 1789603173.808586,
+    "seen": 1789837138.286339,
+    "ast_hash": "61103ca1b862de3f20f181cb23a4742b",
+    "semantic_hash": "61103ca1b862de3f20f181cb23a4742b"
+  },
+  "docs/MODEL_LICENSES.md": {
+    "mtime": 1789603157.5074213,
+    "seen": 1789837138.2863407,
+    "ast_hash": "26e64d0fbb0d6bc18e9e52d5e2cc02fe",
+    "semantic_hash": "26e64d0fbb0d6bc18e9e52d5e2cc02fe"
+  },
+  "docs/PRIVACY_MODEL.md": {
+    "mtime": 1789603091.4353576,
+    "seen": 1789837138.286342,
+    "ast_hash": "15cba8f621b513fe41dfe1462e1eebb5",
+    "semantic_hash": "15cba8f621b513fe41dfe1462e1eebb5"
+  },
+  "docs/THREAT_MODEL.md": {
+    "mtime": 1789603148.9818714,
+    "seen": 1789837138.2863433,
+    "ast_hash": "651141c6346dd785b45901f0190b5841",
+    "semantic_hash": "651141c6346dd785b45901f0190b5841"
+  }
+}

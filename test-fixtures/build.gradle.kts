@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.charles.localcallagent.test.fixtures"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 31
